@@ -8,5 +8,6 @@ the same FastAPI app.
 from backend.phase2 import app
 import backend.proposal_artifacts  # noqa: F401,E402 - registers artifact routes
 import backend.webhooks  # noqa: F401,E402 - registers safe inbound lead webhooks
+import backend.legacy_guard  # noqa: F401,E402 - blocks legacy v1 when auth is enabled
 
 __all__ = ["app"]
