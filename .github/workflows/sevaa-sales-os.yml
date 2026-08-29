@@ -43,6 +43,9 @@ jobs:
           python -m py_compile backend/*.py
           python -m py_compile scripts/*.py
 
+      - name: Validate multi-agent control plane
+        run: python scripts/agent_maintenance.py --check
+
       - name: Run tests
         run: python -m pytest -q
 

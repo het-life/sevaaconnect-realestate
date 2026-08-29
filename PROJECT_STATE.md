@@ -1,33 +1,40 @@
-# Project State
+# Project State — Authoritative Pointer
+
+## Active project
+The authoritative active project is **`sevaa-sales-os/`**. The earlier DealLens experiment is archived/reference-only and must not drive autonomous task selection.
 
 ## Goal
-Validate and launch DealLens, a low-maintenance browser-based real-estate deal analysis product.
+Reach **₹1,00,000/month of sustainable owner-withdrawable cash** through a lawful, low-touch SEVAA sales/revenue operating system, while retaining reinvestment/safety reserves and keeping simulated economics separate from realized cash.
 
-## Current status
-- Public demo landing page and free calculator implemented on `agent/monetization-mvp`.
-- Monetization plan documented.
-- Paid-download Pro build produced and syntax-checked outside the public repository.
-- No customer validation has been completed yet.
+## Current evidence
+- software: LEVEL 5 — paper/sandbox/shadow
+- verified external enquiries: 0
+- verified paid pilots: 0
+- verified collected cash: ₹0
+- primary engine: managed B2B Sales OS
+- secondary path: SaaS productization only after paid demand
+- capital/trading experiments: paper-only and isolated
 
-## Evidence level
-LEVEL 2 — working prototype. No real transaction or market validation has occurred.
+## Current bottleneck
+T100 — founder-authorized public HTTPS deployment with production secrets stored outside Git, persistent `/data`, a monitored public contact identity, deployment verification, then lawful real traffic.
 
-## Product decisions
-- Validate a one-time paid download before investing in a SaaS backend.
-- Keep customer deal data on-device for the first version.
-- Avoid recurring infrastructure and API costs until demand is demonstrated.
-- Treat a successful real payment as the first commercial validation event.
+## Authoritative resume order
+1. `sevaa-sales-os/docs/agent/BOOT.txt`
+2. `sevaa-sales-os/CURRENT.md`
+3. `sevaa-sales-os/TODO.md`
+4. `sevaa-sales-os/state/STATE.json`
+5. `sevaa-sales-os/docs/agent/REGISTRY.json`
+6. `sevaa-sales-os/state/ACTIVE_WORK.json`
+7. only the implementation files needed by the selected task
 
-## External account boundary
-Publishing a live checkout requires an activated merchant account, identity/payout setup, and a checkout URL from the account owner.
+## Multi-agent coordination
+Agent roles, safety limits and KPIs are machine-readable in `sevaa-sales-os/docs/agent/REGISTRY.json`. Runtime task results belong in the append-only `sevaa-sales-os/state/AGENT_EVENTS.jsonl`; derived scorecards are in `sevaa-sales-os/state/AGENT_SCORECARDS.json`.
 
-## Next actions
-1. Open and review the monetization MVP pull request.
-2. Publish the public demo through GitHub Pages or another static host.
-3. Create a digital product checkout and upload `DealLens-Pro-v1.zip` or `DealLens-Pro-v1.html`.
-4. Connect the checkout URL to `BUY_URL` in `app.js`.
-5. Run a 10-person willingness-to-pay test and record objections.
-6. Build additional infrastructure only after validation thresholds in `MONETIZATION.md` are met.
+Validate coordination state with:
+```bash
+cd sevaa-sales-os
+python scripts/agent_maintenance.py --check
+```
 
-## Exact resume point
-Connect a published checkout URL to the demo, deploy the demo, then begin the first validation cohort.
+## Archived experiment
+The previous DealLens project-state text is preserved at `docs/archive/DEALLENS_PROJECT_STATE.md`. It is not the active objective unless this authoritative pointer and the SEVAA persistent state are deliberately changed together.

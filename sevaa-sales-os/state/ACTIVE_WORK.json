@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-08-30T05:04:00+05:30",
+  "claims": [],
+  "rules": [
+    "Before substantial work, read CURRENT.md, TODO.md, state/STATE.json, docs/agent/REGISTRY.json, and this file.",
+    "Claim only one clear scope per task; do not overwrite another active claim.",
+    "Use a dedicated branch for substantial shared-repository work.",
+    "After completion or handoff, remove the claim and append a task_result event to state/AGENT_EVENTS.jsonl."
+  ]
+}
