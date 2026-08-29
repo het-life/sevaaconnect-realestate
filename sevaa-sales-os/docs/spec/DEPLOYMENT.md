@@ -44,7 +44,7 @@ Provider pricing and account eligibility can change. Verify the actual plan/chec
 
 Create one service from this repository with:
 
-- branch: `feat/sevaa-sales-os-mvp` while PR #2 remains the validated release candidate; switch to `main` only after merge
+- branch: `main` (authoritative validated release)
 - Root Directory: `/sevaa-sales-os`
 - Dockerfile: auto-detected from that root directory
 - Volume mount: `/data`
@@ -126,6 +126,6 @@ EXPECTED BENEFIT: public HTTPS `/quote`, persistent data, recoverable backups, a
 
 RISKS: recurring cloud charges if a paid tier or excess usage is accepted, public attack surface, provider dependency, brief downtime on volume-backed redeploys, and loss of data if backup policy is ignored.
 
-ROLLBACK: disable public networking, stop/delete the service after exporting an integrity-checked SQLite backup, revoke deployed secrets, and keep the local/CI system unchanged.
+ROLLBACK: disable public networking, stop/delete the service after exporting an integrity-checked SQLite backup, revoke deployed secrets, and keep the GitHub/CI-validated `main` system unchanged.
 
-AFTER APPROVAL: deploy the validated branch, run the ten-step post-deploy verification above, then send only lawful real traffic to `/quote` and record observed funnel economics separately from simulated economics.
+AFTER APPROVAL: deploy `main`, run the ten-step post-deploy verification above, then send only lawful real traffic to `/quote` and record observed funnel economics separately from simulated economics.

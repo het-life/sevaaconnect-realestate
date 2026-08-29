@@ -1,6 +1,6 @@
 # CURRENT
 
-Status: PR #2 (`feat/sevaa-sales-os-mvp`) is the validated release candidate. The Sales OS remains isolated under `sevaa-sales-os/` while `main` is unchanged.
+Status: `main` is the authoritative validated SEVAA Sales OS release. PR #2 was merged into `main` at verified merge commit `4690435b45cbd85b31ba9e20236710735a743cdf`.
 
 ## Objective
 
@@ -38,8 +38,10 @@ Working core:
 
 Evidence level: **LEVEL 5 — PAPER / SANDBOX / SHADOW** for software operation.
 
-Latest verified GitHub Actions result on the corrected deployment gate:
+Latest verified GitHub Actions results:
 
+- exact PR head passed the full release gate before merge
+- `main` push run 117 passed after merge
 - 26 pytest tests passed
 - Python backend/scripts compile passed
 - Docker Compose validation passed
@@ -59,7 +61,7 @@ Economic evidence remains below real-world validation:
 
 ## Current bottleneck
 
-The system needs a public HTTPS host and lawful real traffic to advance evidence quality. Internal PostgreSQL work would not advance the core hypothesis at this stage; SQLite remains the deliberate single-instance pilot database until a measured scale/reliability trigger appears.
+The system needs an explicitly authorized public HTTPS host and lawful real traffic to advance evidence quality. Internal PostgreSQL work would not advance the core hypothesis at this stage; SQLite remains the deliberate single-instance pilot database until a measured scale/reliability trigger appears.
 
 ## Safety boundary
 
@@ -76,10 +78,10 @@ Externally blocked pilot deployment and first real-funnel validation.
 ## Approval / external gates
 
 1. Authorize/create the selected public hosting project and any resulting cloud charge.
-2. Provide/configure unique production founder and automation secrets in the host secret store.
+2. Configure unique production founder and automation secrets in the host secret store.
 3. Enable a lawful real traffic source only after the deployment verification checklist passes.
 4. Configure payment-provider credentials only when a founder-reviewed real buyer requires payment collection.
 
 ## Exact resume point
 
-Read `docs/spec/DEPLOYMENT.md`, then, once hosting is authorized, deploy this validated branch as one instance with `/data` persistent storage. Execute the documented ten-step post-deploy verification before directing real traffic to `/quote`. Then measure the first external enquiry → qualified lead → approved proposal → paid-pilot funnel without mixing synthetic data into real metrics.
+Read `docs/spec/DEPLOYMENT.md`, then, once hosting is explicitly authorized, deploy `main` as one instance with `/data` persistent storage. Execute the documented ten-step post-deploy verification before directing real traffic to `/quote`. Then measure the first external enquiry → qualified lead → approved proposal → paid-pilot funnel without mixing synthetic data into real metrics.
