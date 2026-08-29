@@ -17,6 +17,7 @@ def setup_function():
     base.DB_PATH = TEST_DB
     os.environ.pop("SEVAA_FOUNDER_TOKEN", None)
     os.environ.pop("SEVAA_AUTOMATION_TOKEN", None)
+    os.environ.pop("SEVAA_WEBHOOK_TOKEN", None)
     if TEST_DB.exists():
         TEST_DB.unlink()
 
@@ -148,3 +149,60 @@ def test_proposal_artifact_tracks_approval_state():
         assert download.status_code == 200
         assert "attachment; filename=\"sevaa-proposal-" in download.headers["content-disposition"]
         assert "20ft modular cafe shell + interiors" in download.text
+
+
+def test_webhook_is_disabled_by_default_and_idempotent_when_enabled():
+    headers = {
+        "Idempotency-Key": "web-1",
+        "X-SEVAA-Webhook-Token": "webhook-test-token",
+    }
+    with TestClient(app) as client:
+        disabled = client.post("/api/v2/webhooks/leads/website", json=payload(), headers=headers)
+        assert disabled.status_code == 503
+
+    os.environ["SEVAA_WEBHOOK_TOKEN"] = "webhook-test-token"
+    try:
+        with TestClient(app) as client:
+            missing_key = client.post(
+                "/api/v2/webhooks/leads/website",
+                json=payload(),
+                headers={"X-SEVAA-Webhook-Token": "webhook-test-token"},
+            )
+            assert missing_key.status_code == 400
+
+            wrong = client.post(
+                "/api/v2/webhooks/leads/website",
+                json=payload(),
+                headers={"Idempotency-Key": "bad-1", "X-SEVAA-Webhook-Token": "wrong"},
+            )
+            assert wrong.status_code == 401
+
+            first = client.post("/api/v2/webhooks/leads/website", json=payload(), headers=headers)
+            assert first.status_code == 201
+            assert first.json()["source"] == "webhook:website"
+
+            replay = client.post("/api/v2/webhooks/leads/website", json=payload(), headers=headers)
+            assert replay.status_code == 201
+            assert replay.json()["id"] == first.json()["id"]
+            assert replay.json()["idempotent_replay"] is True
+
+            conflict = client.post(
+                "/api/v2/webhooks/leads/website",
+                json=payload(requirement="Different requirement"),
+                headers=headers,
+            )
+            assert conflict.status_code == 409
+
+            # Webhook callers cannot force duplicate insertion even if they request it.
+            duplicate_override = client.post(
+                "/api/v2/webhooks/leads/website",
+                json=payload(name="Duplicate Override", allow_duplicate=True),
+                headers={
+                    "Idempotency-Key": "web-2",
+                    "X-SEVAA-Webhook-Token": "webhook-test-token",
+                },
+            )
+            assert duplicate_override.status_code == 409
+            assert duplicate_override.json()["detail"]["code"] == "duplicate_lead"
+    finally:
+        os.environ.pop("SEVAA_WEBHOOK_TOKEN", None)
