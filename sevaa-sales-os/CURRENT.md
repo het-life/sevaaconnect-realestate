@@ -1,6 +1,6 @@
 # CURRENT
 
-Status: `main` is the authoritative validated SEVAA Sales OS release. Privacy hardening from PR #6 and repository/deployment-preflight reconciliation from PR #7 are merged. The latest functional release commit is `2b862a9c72c1c1ec16257e3497aa53712bbb5f30`.
+Status: `main` is the authoritative validated SEVAA Sales OS release. Privacy hardening, deployment preflight, runbook alignment and state reconciliation are merged. Latest verified `main` head: `3b8227b1c8f398a0dc8a1360763791638188ba21`.
 
 ## Objective
 
@@ -42,10 +42,10 @@ Working core:
 
 Evidence level: **LEVEL 5 — PAPER / SANDBOX / SHADOW** for software operation.
 
-Latest verified `main` release gate before this state-only update:
+Latest verified `main` release gate:
 
-- merge commit `2b862a9c72c1c1ec16257e3497aa53712bbb5f30`
-- GitHub Actions run 146 completed successfully
+- commit `3b8227b1c8f398a0dc8a1360763791638188ba21`
+- GitHub Actions run 150 (`33281298927`) completed successfully
 - 31 pytest tests passed
 - Python backend/scripts compile passed
 - Docker Compose validation passed
@@ -66,7 +66,7 @@ Economic evidence remains below real-world validation:
 
 ## Current bottleneck
 
-All meaningful P0 engineering work available without an external account is complete. Evidence advancement now requires a founder-authorized public HTTPS host, production secret configuration, a monitored public contact identity, and then lawful real traffic. Internal PostgreSQL or additional product features would not advance the core hypothesis before this gate.
+All meaningful P0 engineering work available without an external hosting account is complete. Evidence advancement now requires Railway account/project authorization, production secret configuration, a monitored public contact identity, and then lawful real traffic. Current Railway documentation permits the initial Trial without a credit card, so a paid subscription is not required merely to begin the deployment experiment. Internal PostgreSQL or additional product features would not advance the core hypothesis before this gate.
 
 Railway remains the selected pilot host because the current system requires Docker/FastAPI support plus persistent SQLite storage. Free compute options investigated that do not provide persistent local storage are not equivalent substitutes.
 
@@ -87,7 +87,7 @@ T100 — deploy the validated single-instance pilot to public HTTPS. This task i
 
 ## Approval / external gates
 
-1. Authorize/create the selected Railway hosting project and do not accept a paid plan or excess-use commitment without explicit founder approval.
+1. Authorize/connect the Railway account/project. Start on the no-card Trial/Free path; do not accept Hobby/Pro or excess-use commitment without explicit founder approval.
 2. Configure unique production `SEVAA_FOUNDER_TOKEN` and `SEVAA_AUTOMATION_TOKEN` values in the host secret store, with `SEVAA_ALLOW_LEGACY_V1=0` and `SEVAA_DB_PATH=/data/sevaa.db`.
 3. Configure a monitored `SEVAA_PUBLIC_CONTACT_EMAIL` before broad promotion.
 4. Enable public networking only after secrets are configured; keep exactly one replica and mount persistent storage at `/data`.
