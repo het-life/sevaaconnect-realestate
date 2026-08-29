@@ -17,6 +17,15 @@
 - Added persistent follow-up tasks with pending, overdue and completed states.
 - Added authenticated `/api/v2/internal/daily-brief` for automation/OpenClaw clients.
 - Expanded v2 dashboard metrics with pending approvals and overdue follow-ups.
-- Documented founder and automation token environment variables.
-- Expanded hardened-v2 tests to cover ingestion replay, duplicate denial, auth, role gates, approvals and follow-ups.
-- Updated CURRENT.md and TODO.md to advance the automated loop to proposal document artifacts.
+- Added deterministic proposal Markdown artifacts with draft/approved safety banners and download endpoint.
+- Added disabled-by-default inbound lead webhook adapter with separate secret and mandatory idempotency key.
+- Forced webhook duplicate protection even when callers request duplicate insertion.
+- Added hardened runtime composition in `backend/runtime.py`.
+- Added automatic legacy v1 guard: authenticated deployments return 410 for legacy unauthenticated `/api/*` routes except public health.
+- Added `SEVAA_ALLOW_LEGACY_V1` emergency compatibility override documentation; default remains disabled.
+- Added versioned database migrations v1-v3 plus idempotent `schema_migrations` ledger.
+- Bound hardened runtime initialization to the migration engine to centralize schema creation.
+- Added migration-ledger idempotency regression coverage.
+- Made v1/v2 test database setup safe across pytest collection order.
+- Added GitHub Actions CI for backend compilation and the full pytest suite.
+- Advanced CURRENT.md and TODO.md to authenticated founder UI, OpenClaw client contract and deployment hardening.
