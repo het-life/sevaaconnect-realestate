@@ -12,5 +12,6 @@ import backend.founder_ops  # noqa: F401,E402 - registers authenticated founder 
 import backend.webhooks  # noqa: F401,E402 - registers safe inbound lead webhooks
 import backend.revenue  # noqa: F401,E402 - registers founder-gated revenue/payment routes
 import backend.legacy_guard  # noqa: F401,E402 - blocks legacy v1 when auth is enabled
+import backend.rate_limit  # noqa: F401,E402 - bounds v2 webhook/service request rates
 
 __all__ = ["app"]
