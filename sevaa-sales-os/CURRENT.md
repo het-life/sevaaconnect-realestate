@@ -1,6 +1,6 @@
 # CURRENT
 
-Status: `main` is the authoritative validated SEVAA Sales OS release. PR #2 was merged into `main` at verified merge commit `4690435b45cbd85b31ba9e20236710735a743cdf`. PR #6 (`feat/privacy-pilot-hardening`) adds the final pre-public privacy boundary and is awaiting exact-head validation/merge.
+Status: `main` is the authoritative validated SEVAA Sales OS release. Privacy hardening from PR #6 and repository/deployment-preflight reconciliation from PR #7 are merged. The latest functional release commit is `2b862a9c72c1c1ec16257e3497aa53712bbb5f30`.
 
 ## Objective
 
@@ -23,7 +23,7 @@ Working core:
 - deterministic proposal artifacts with visible draft/approval state
 - disabled-by-default inbound webhook with separate secret and mandatory idempotency
 - public `/quote` plus unauthenticated duplicate-safe `/api/v2/public/enquiries`
-- PR #6 privacy hardening: standalone `/privacy`, server-enforced acknowledgement, sensitive-data warning and optional `SEVAA_PUBLIC_CONTACT_EMAIL`
+- standalone `/privacy`, server-enforced privacy acknowledgement, sensitive-data warning and optional `SEVAA_PUBLIC_CONTACT_EMAIL`
 - anonymous/public, webhook and authenticated service rate limits
 - legacy unauthenticated v1 guard when hardened auth is configured
 - versioned SQLite schema migrations
@@ -34,16 +34,19 @@ Working core:
 - platform-port-aware container entrypoint that fixes mounted SQLite volume ownership then drops to uid/gid 10001
 - integrity-checked SQLite backup/restore tooling
 - Railway pilot deployment/rollback runbook
+- `scripts/verify_deployment.py` for non-mutating hosted health/auth/role/permission/public-page preflight
 - primary-source DPDP commencement/Rule 3 implementation research stored in `docs/research/DPDP_PUBLIC_ENQUIRY_2026-08-30.md`
+- root README now explicitly routes future operators/agents into this persistent SEVAA state rather than the older DealLens experiment
 
 ## Verified results
 
 Evidence level: **LEVEL 5 — PAPER / SANDBOX / SHADOW** for software operation.
 
-Latest verified results relevant to the privacy implementation:
+Latest verified `main` release gate before this state-only update:
 
-- PR #6 implementation head `546d13f66c720948520853571e02eb93445867d2` passed GitHub Actions run 119
-- 28 pytest tests passed
+- merge commit `2b862a9c72c1c1ec16257e3497aa53712bbb5f30`
+- GitHub Actions run 146 completed successfully
+- 31 pytest tests passed
 - Python backend/scripts compile passed
 - Docker Compose validation passed
 - deployment image build passed
@@ -52,8 +55,7 @@ Latest verified results relevant to the privacy implementation:
 - `/api/health` passed
 - PID 1 verified running as uid 10001 after startup privilege drop
 - `/data` verified owned by uid 10001 in the mounted-volume smoke
-
-The branch contains additional documentation/state commits after that implementation head; exact current-head CI must be green before merge.
+- deployment verifier regression coverage passed and the preflight is designed not to create leads, resolve approvals, or touch payment state
 
 Economic evidence remains below real-world validation:
 
@@ -64,7 +66,9 @@ Economic evidence remains below real-world validation:
 
 ## Current bottleneck
 
-Finish exact-head validation/merge of PR #6, then the only meaningful P0 blockers are external: an explicitly authorized public HTTPS host, production secrets/contact identity and lawful real traffic. Internal PostgreSQL work would not advance the core hypothesis at this stage.
+All meaningful P0 engineering work available without an external account is complete. Evidence advancement now requires a founder-authorized public HTTPS host, production secret configuration, a monitored public contact identity, and then lawful real traffic. Internal PostgreSQL or additional product features would not advance the core hypothesis before this gate.
+
+Railway remains the selected pilot host because the current system requires Docker/FastAPI support plus persistent SQLite storage. Free compute options investigated that do not provide persistent local storage are not equivalent substitutes.
 
 ## Safety and public-data boundary
 
@@ -74,20 +78,29 @@ Finish exact-head validation/merge of PR #6, then the only meaningful P0 blocker
 - No route autonomously spends money, borrows, transfers funds, refunds, trades, or enters a contract.
 - Razorpay credentials and other production secrets must remain outside Git.
 - Public quote submissions require affirmative privacy-notice acknowledgement.
-- Broad public promotion should not begin until `SEVAA_PUBLIC_CONTACT_EMAIL` points to a monitored company mailbox and `/privacy` is reviewed for the deployed processors/workflow.
+- Broad public promotion must not begin until `SEVAA_PUBLIC_CONTACT_EMAIL` points to a monitored company mailbox and `/privacy` is reviewed for the deployed processors/workflow.
+- Hosting plan acceptance or any recurring/excess cloud charge remains a founder approval boundary.
 
 ## Current task
 
-Validate and merge PR #6, then stop only at the hosted-pilot external authorization gate if no other independent P0 work remains.
+T100 — deploy the validated single-instance pilot to public HTTPS. This task is `BLOCKED_EXTERNAL` only by hosting/account authorization and production configuration; repository implementation and preflight automation are ready.
 
 ## Approval / external gates
 
-1. Authorize/create the selected public hosting project and any resulting cloud charge.
-2. Configure unique production founder and automation secrets in the host secret store.
-3. Configure a monitored public privacy/contact mailbox before broad promotion.
-4. Enable a lawful real traffic source only after the deployment verification checklist passes.
+1. Authorize/create the selected Railway hosting project and do not accept a paid plan or excess-use commitment without explicit founder approval.
+2. Configure unique production `SEVAA_FOUNDER_TOKEN` and `SEVAA_AUTOMATION_TOKEN` values in the host secret store, with `SEVAA_ALLOW_LEGACY_V1=0` and `SEVAA_DB_PATH=/data/sevaa.db`.
+3. Configure a monitored `SEVAA_PUBLIC_CONTACT_EMAIL` before broad promotion.
+4. Enable public networking only after secrets are configured; keep exactly one replica and mount persistent storage at `/data`.
 5. Configure payment-provider credentials only when a founder-reviewed real buyer requires payment collection.
 
 ## Exact resume point
 
-First verify PR #6's exact current head through the full CI gate and merge it if green. Then read `docs/spec/DEPLOYMENT.md`; once hosting is explicitly authorized, deploy `main` as one instance with `/data` persistent storage, execute the ten-step post-deploy verification, and measure the first genuine external enquiry → qualified lead → approved proposal → paid-pilot funnel without mixing synthetic data into real metrics.
+Once the Railway project/account boundary is authorized:
+
+1. Deploy branch `main` with Root Directory `/sevaa-sales-os`, one replica, volume mounted at `/data`, and health path `/api/health`.
+2. Set production secrets only in the host secret store; never commit them.
+3. Generate the public HTTPS domain.
+4. Run `scripts/verify_deployment.py` against that domain using founder/automation tokens from the operator environment. Require all six safe checks to pass.
+5. Complete the remaining deployment-runbook checks: one clearly synthetic `/quote` enquiry, remove/label it so it cannot enter real metrics, enable backups, and perform the documented restore drill.
+6. Only then direct lawful real traffic to `/quote` and measure the first genuine external enquiry → qualified lead → founder-approved proposal → paid-pilot funnel.
+7. Keep synthetic/paper economics separate from realized enquiries, orders and collected cash at all times.
