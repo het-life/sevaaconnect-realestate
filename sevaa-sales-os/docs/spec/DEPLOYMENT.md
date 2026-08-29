@@ -30,11 +30,13 @@ As researched and re-checked on 2026-08-30 from Railway's official pricing/docs,
 - secret environment variables
 - deploy-time health checks
 
-Current published plan constraints at the re-check:
+Current official pricing-page facts at the re-check:
 
-- Trial: new users can receive a one-time $5 credit valid for up to 30 days; a full trial exposes Hobby-like features with tighter compute limits
-- Free: $0/month subscription with $1/month of resource credit; up to 0.5 GB volume storage
-- Hobby: $5/month minimum usage, with the $5 applied toward resource use; up to 5 GB volume storage
+- new users can receive a one-time $5 trial credit that expires after 30 days
+- the Free card is headed `$0 per month`, while a bullet on that same card says `30-day free trial with $5 credits, then $1 per month`; therefore the exact post-trial Free charge must be confirmed in the account billing/checkout screen rather than inferred
+- Free lists up to 0.5 GB of volume storage
+- Hobby lists a $5 minimum monthly usage, includes $5 of monthly usage, and lists up to 5 GB storage
+- resource usage can add cost beyond included usage
 
 Provider pricing and account eligibility can change. Verify the actual plan/checkout screen before accepting a charge. Start on the lowest tier that provides verified public networking and persistent-volume behavior for the account; do not upgrade without a measured requirement.
 
@@ -118,7 +120,7 @@ ACTION REQUIRED: create/authorize the Railway project and any resulting spend.
 
 WHY: a public host is required to advance from sandbox evidence to a real external enquiry.
 
-COST: Railway currently lists Free at $0/month with $1/month resource credit, after/alongside its new-user trial mechanics; Hobby is $5/month minimum usage. Resource usage above included credits can increase cost. Re-check the actual checkout/upgrade screen before accepting any charge.
+COST: Railway's 2026-08-30 pricing page has ambiguous Free-plan wording (`$0 per month` on the card, but `then $1 per month` in the trial bullet). Hobby is clearly $5 minimum monthly usage with $5 included usage. Treat the account checkout/billing screen as authoritative and do not accept a paid plan or excess-use charge without authorization.
 
 EXPECTED BENEFIT: public HTTPS `/quote`, persistent data, recoverable backups, and the ability to measure a real acquisition funnel.
 
