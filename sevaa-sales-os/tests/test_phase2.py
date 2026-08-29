@@ -10,7 +10,7 @@ os.environ["SEVAA_DB_PATH"] = str(TEST_DB)
 
 from fastapi.testclient import TestClient
 import backend.app as base
-from backend.phase2 import app
+from backend.runtime import app
 
 
 def setup_function():
@@ -115,3 +115,36 @@ def test_auth_founder_gate_and_daily_brief():
         brief = client.get("/api/v2/internal/daily-brief", headers=automation)
         assert brief.status_code == 200
         assert brief.json()["actor"]["role"] == "automation"
+
+
+def test_proposal_artifact_tracks_approval_state():
+    with TestClient(app) as client:
+        lead = client.post("/api/v2/leads", json=payload()).json()
+        proposal = client.post(
+            f"/api/v2/leads/{lead['id']}/proposals",
+            json={"amount": 725000, "scope_summary": "20ft modular cafe shell + interiors"},
+        ).json()
+
+        draft = client.post(f"/api/v2/proposals/{proposal['id']}/artifact")
+        assert draft.status_code == 201
+        assert draft.json()["status_snapshot"] == "draft"
+        assert "DRAFT — NOT APPROVED FOR EXTERNAL USE" in draft.json()["content"]
+        assert "₹725,000" in draft.json()["content"]
+
+        submitted = client.post(f"/api/v2/proposals/{proposal['id']}/submit").json()
+        approval_id = submitted["approval"]["id"]
+        approved = client.post(
+            f"/api/v2/approvals/{approval_id}/decision",
+            json={"decision": "approved", "note": "Founder approved"},
+        )
+        assert approved.status_code == 200
+
+        regenerated = client.post(f"/api/v2/proposals/{proposal['id']}/artifact")
+        assert regenerated.status_code == 201
+        assert regenerated.json()["status_snapshot"] == "approved"
+        assert "APPROVED FOR INTERNAL USE" in regenerated.json()["content"]
+
+        download = client.get(f"/api/v2/proposals/{proposal['id']}/artifact/download")
+        assert download.status_code == 200
+        assert "attachment; filename=\"sevaa-proposal-" in download.headers["content-disposition"]
+        assert "20ft modular cafe shell + interiors" in download.text
