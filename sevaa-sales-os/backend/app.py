@@ -13,6 +13,8 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from backend.migrations import apply_migrations
+
 ROOT = Path(__file__).resolve().parents[1]
 DB_PATH = Path(os.getenv("SEVAA_DB_PATH", ROOT / "data" / "sevaa.db"))
 WEB_DIR = ROOT / "web"
@@ -58,38 +60,7 @@ def db():
 
 def init_db() -> None:
     with db() as conn:
-        conn.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS leads (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                company TEXT,
-                phone TEXT,
-                email TEXT,
-                city TEXT,
-                requirement TEXT NOT NULL,
-                budget_min INTEGER,
-                budget_max INTEGER,
-                timeline_days INTEGER,
-                known_buyer INTEGER NOT NULL DEFAULT 0,
-                site_ready INTEGER NOT NULL DEFAULT 0,
-                source TEXT NOT NULL DEFAULT 'manual',
-                score INTEGER NOT NULL,
-                stage TEXT NOT NULL,
-                created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS audit_events (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                lead_id INTEGER,
-                event_type TEXT NOT NULL,
-                detail TEXT NOT NULL,
-                actor TEXT NOT NULL DEFAULT 'system',
-                created_at TEXT NOT NULL,
-                FOREIGN KEY(lead_id) REFERENCES leads(id) ON DELETE SET NULL
-            );
-            """
-        )
+        apply_migrations(conn)
 
 
 def score_lead(payload: LeadCreate) -> int:
