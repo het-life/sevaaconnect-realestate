@@ -68,3 +68,50 @@ jobs:
           done
           docker logs sevaa-sales-os-ci
           exit 1
+
+  postgres-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: sevaa_ci
+          POSTGRES_USER: sevaa_ci
+          POSTGRES_PASSWORD: ci-postgres-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sevaa_ci -d sevaa_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    defaults:
+      run:
+        working-directory: sevaa-sales-os
+    env:
+      PYTHONPATH: .
+      SEVAA_DATABASE_URL: postgresql://sevaa_ci:ci-postgres-password@127.0.0.1:5432/sevaa_ci
+      SEVAA_FOUNDER_TOKEN: ci-founder-token
+      SEVAA_AUTOMATION_TOKEN: ci-automation-token
+      SEVAA_ALLOW_LEGACY_V1: '0'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Compile PostgreSQL compatibility layer
+        run: |
+          python -m py_compile backend/database.py backend/migration_runtime.py
+          python -m py_compile tests/test_postgres_runtime.py
+
+      - name: Run PostgreSQL hardened-flow integration
+        run: python -m pytest -q tests/test_postgres_runtime.py
