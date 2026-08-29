@@ -1,18 +1,27 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-30T04:18:00+05:30",
+  "updated_at": "2026-08-30T04:33:00+05:30",
   "mission": "Reach sustainable INR 100000/month owner-withdrawable cash while retaining reinvestment and safety reserves.",
-  "mode": "paper_first",
+  "mode": "external_validation_blocked",
   "primary_engine": "managed_b2b_sales_os",
   "secondary_engine": "saas_productization_after_paid_demand",
   "market_capital_engine": "paper_only",
   "repository": "het-life/sevaaconnect-realestate",
   "branch": "feat/sevaa-sales-os-mvp",
   "pull_request": 2,
-  "last_known_parent_commit": "0a4e14a3c1ebff2441b401b9128f242d480d7976",
+  "last_known_parent_commit": "c848f293d2fcdff14acef9cb9394de98a752fb00",
   "verification": {
-    "local_revenue_tests": "focused paper/funnel suite passed before push",
-    "github_ci": "rerunning after PYTHONPATH fix",
+    "software_evidence_level": 5,
+    "software_evidence_label": "paper/sandbox/shadow",
+    "pytest": "26 passed",
+    "github_ci": "green on corrected deployment gate",
+    "compose_validation": "passed",
+    "docker_image_build": "passed",
+    "container_health": "passed on injected platform PORT with mounted persistent volume",
+    "container_privilege_drop": "PID 1 verified uid 10001; /data verified uid 10001",
+    "verified_external_enquiries": 0,
+    "verified_paid_pilots": 0,
+    "verified_collected_cash_inr": 0,
     "open_errors": 0
   },
   "economics": {
@@ -21,35 +30,56 @@
     "planning_setup_fee_ex_gst_inr": 14999,
     "target_monthly_withdrawal_inr": 100000,
     "modeled_active_customers_for_target": 13,
-    "real_acquisition_enabled": false
+    "real_acquisition_enabled": false,
+    "economics_evidence": "simulated/paper only"
   },
   "completed": [
     "lead ingestion/scoring/pipeline/audit",
     "idempotent duplicate-safe ingestion",
     "proposal drafts and founder approval gate",
-    "founder/automation auth roles",
+    "founder/automation auth roles and actor audit",
+    "authenticated founder console",
     "followup scheduling and daily brief",
-    "versioned migrations and CI",
+    "proposal artifact generation and secure founder-gated shares",
+    "versioned SQLite migrations",
+    "constrained OpenClaw automation client with no founder approval method",
+    "disabled-by-default inbound webhook",
+    "public quote/enquiry funnel with honeypot and duplicate-safe ingestion",
+    "process-local public/webhook/service rate limits",
+    "founder-gated Razorpay payment-link adapter and verified reconciliation",
+    "Dockerfile and local-safe Compose profile",
+    "platform PORT and mounted-volume compatible container privilege drop",
+    "integrity-checked SQLite backup/restore and restore regression",
+    "CI compile/pytest/compose/image/mounted-volume health gate",
+    "Railway pilot deployment and rollback runbook",
     "paper-money economics model",
     "source-attributed funnel ledger with CAC/payback guardrails",
     "founder requirements and error protocol",
     "open-source reuse policy"
   ],
-  "next_action": "Confirm GitHub CI is green, then integrate observed funnel events into hardened backend without weakening auth or approval gates.",
+  "current_bottleneck": "A public HTTPS deployment and lawful real traffic are required to advance from Level 5 sandbox evidence to Level 6 real-world validation.",
+  "next_action": "After explicit hosting authorization, deploy one instance with /data persistent storage using docs/spec/DEPLOYMENT.md, run the ten-step verification, then route lawful real traffic to /quote and measure the first external enquiry-to-paid-pilot funnel.",
   "next_files": [
-    ".github/workflows/sevaa-sales-os.yml",
-    "backend/runtime.py",
-    "backend/migrations.py",
-    "backend/phase2.py",
-    "scripts/funnel_economics.py",
-    "tests/test_phase2.py",
-    "tests/test_funnel_economics.py"
+    "docs/spec/DEPLOYMENT.md",
+    "CURRENT.md",
+    "TASKS.md",
+    "FOUNDER_REQUIREMENTS.md",
+    "backend/public_enquiry.py",
+    "backend/revenue.py",
+    "scripts/funnel_economics.py"
+  ],
+  "external_gates": [
+    "founder-authorized public hosting account/project and any resulting spend",
+    "production founder and automation secrets in host secret store",
+    "lawful founder-approved real traffic source",
+    "payment-provider credentials only when a founder-reviewed real buyer requires collection"
   ],
   "rules": [
     "Do not replay conversation history when STATE.json is sufficient.",
     "Never store secret values in Git or logs.",
     "Turn repeated operations into code.",
     "Simulation is not revenue; only verified collected cash counts as real revenue.",
-    "No autonomous real spend, borrowing, trading, payouts, refunds, price overrides, or unsolicited bulk messaging."
+    "No autonomous real spend, borrowing, trading, payouts, refunds, price overrides, or unsolicited bulk messaging.",
+    "Keep one application instance while SQLite is the deployment database; PostgreSQL is a measured scale trigger, not pre-pilot work."
   ]
 }
