@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DealLens — Real Estate Deal Analyzer</title>
+  <meta name="description" content="A fast, private, browser-based real estate deal analyzer for investors and brokers." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">PRIVATE • FAST • NO SIGN-UP</div>
+        <h1>Know if a property deal deserves your time.</h1>
+        <p class="lead">Enter the basic numbers and get instant cash-flow, yield, cap-rate and risk signals. Your data stays in your browser.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#calculator">Try the free calculator</a>
+          <a class="button secondary" id="buyButton" href="#">Get DealLens Pro</a>
+        </div>
+        <p class="micro" id="checkoutNote">Pro checkout will be connected before launch.</p>
+      </div>
+      <aside class="score-card">
+        <span>Example deal score</span>
+        <strong>78/100</strong>
+        <small>Positive cash flow • healthy cap rate • moderate leverage</small>
+      </aside>
+    </section>
+
+    <section class="grid features">
+      <article><h3>Instant economics</h3><p>Monthly cash flow, gross yield, cap rate and cash-on-cash return.</p></article>
+      <article><h3>Private by default</h3><p>No account and no cloud database. Inputs remain on the device.</p></article>
+      <article><h3>Built for decisions</h3><p>Simple signals that help you reject weak deals quickly and investigate stronger ones.</p></article>
+    </section>
+
+    <section id="calculator" class="calculator card">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">FREE DEAL CHECK</div>
+          <h2>Run the numbers</h2>
+        </div>
+        <button class="button secondary" id="resetButton" type="button">Reset</button>
+      </div>
+
+      <form id="dealForm" class="form-grid">
+        <label>Purchase price <input id="price" type="number" min="0" step="1000" value="5000000" /></label>
+        <label>Monthly rent <input id="rent" type="number" min="0" step="500" value="35000" /></label>
+        <label>Down payment <input id="down" type="number" min="0" step="1000" value="1500000" /></label>
+        <label>Loan interest % <input id="interest" type="number" min="0" step="0.1" value="9" /></label>
+        <label>Loan term (years) <input id="term" type="number" min="1" step="1" value="20" /></label>
+        <label>Monthly non-loan costs <input id="costs" type="number" min="0" step="100" value="6000" /></label>
+      </form>
+
+      <div class="metrics" id="metrics">
+        <article><span>Monthly EMI</span><strong id="emi">—</strong></article>
+        <article><span>Monthly cash flow</span><strong id="cashflow">—</strong></article>
+        <article><span>Gross rental yield</span><strong id="yield">—</strong></article>
+        <article><span>Cap rate</span><strong id="caprate">—</strong></article>
+        <article><span>Cash-on-cash</span><strong id="coc">—</strong></article>
+        <article class="highlight"><span>Deal score</span><strong id="score">—</strong></article>
+      </div>
+      <p class="disclaimer">Educational decision-support only. This is not financial, legal, tax, or investment advice.</p>
+    </section>
+
+    <section class="card pro">
+      <div>
+        <div class="eyebrow">DEALLENS PRO</div>
+        <h2>For people screening deals regularly.</h2>
+        <p>Pro adds saved deals, scenario stress-testing, DSCR, break-even occupancy, payback estimates, JSON export/import and a printable one-page report.</p>
+      </div>
+      <div class="price-box"><span>Launch price</span><strong>₹499</strong><small>One-time purchase</small></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
