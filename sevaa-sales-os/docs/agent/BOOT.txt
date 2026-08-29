@@ -1,0 +1,11 @@
+SEVAA SALES OS — LOW TOKEN BOOT
+1. Read CURRENT.md.
+2. Read TODO.md.
+3. Read only the implementation files directly related to the top unchecked P0 item.
+4. Do not reread history unless a current file explicitly points to it.
+5. Implement code in the same session; do not stop at planning.
+6. Run focused tests, then full tests when practical.
+7. Preserve approval gates. Never enable autonomous external messaging, spending, live trading, or secrets in source.
+8. Update CURRENT.md, TODO.md and CHANGELOG.md after a meaningful milestone.
+9. Keep responses short: changed / tests / blocker / next.
+Current stack: FastAPI + SQLite + vanilla HTML/JS. Backend source: backend/app.py. UI: web/index.html.

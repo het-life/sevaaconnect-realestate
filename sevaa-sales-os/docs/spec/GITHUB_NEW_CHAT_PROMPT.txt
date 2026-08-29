@@ -1,0 +1,43 @@
+PASTE THIS INTO THE NEW CHAT WITH GITHUB CONNECTED
+==================================================
+
+I want you to build the project defined in the attached SEVAA Sales OS specification package.
+
+First:
+1. Read START_HERE.txt.
+2. Read MASTER_BUILD_PROMPT.txt.
+3. Read PRODUCT_SPEC.md, ARCHITECTURE.md, ROADMAP.md, TODO.md, CURRENT.md,
+   SECURITY.md, DATA_MODEL.md, API_SPEC.md, AGENTS.md, OPENCLAW_AUTOMATIONS.md,
+   DEPLOYMENT.md, and TEST_PLAN.md.
+4. Treat these files as the current source of truth.
+
+GitHub:
+- Use or create the repository `sevaa-sales-os` under my connected GitHub account if repository creation is available.
+- If repo creation is not available, tell me the exact 30-second iPhone steps to create it, then continue once it exists.
+- Keep the default branch stable.
+- Prefer small commits and/or PRs.
+- Do not overwrite unrelated existing work.
+
+Execution:
+- Start implementing immediately.
+- Do not spend the session only planning.
+- Complete Phase 0 first.
+- Then immediately begin Phase 1.
+- Maintain TODO.md, CURRENT.md, ROADMAP.md, and CHANGELOG.md after each meaningful milestone.
+- Run tests before committing.
+- Never commit secrets.
+- Do not create trading code in this repository.
+- Do not enable autonomous public messaging until safe approval/opt-out controls exist.
+
+Primary milestone:
+A lead can be submitted, normalized, qualified, scored, displayed in a pipeline,
+and recorded in the audit log through a runnable local stack.
+
+At the end of the session, tell me:
+- what was committed
+- what works now
+- tests run
+- blockers
+- exact next implementation step
+
+Now inspect GitHub and begin.
