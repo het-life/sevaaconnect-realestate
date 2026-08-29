@@ -32,9 +32,10 @@ Verified from Railway documentation/pricing on 2026-08-30:
 - Railway injects `PORT`; health checks use the application port.
 - Persistent volumes support SQLite and can be mounted at `/data`.
 - Scheduled daily/weekly/monthly volume backups are supported.
-- Free plan publishes $1/month after the trial with up to 0.5 GB volume storage.
-- Hobby publishes a $5 minimum monthly usage with up to 5 GB volume storage.
-- A volume-backed service is single-replica for this architecture; Railway notes attached volumes cannot be used by multiple simultaneous deployments/replicas without constraints.
+- The official pricing page labels Free `$0 per month` while the same card also says a new-user 30-day $5-credit trial is followed by `$1 per month`; therefore the post-trial Free charge is ambiguous in public copy and must be confirmed at checkout.
+- Free lists up to 0.5 GB volume storage.
+- Hobby publishes a $5 minimum monthly usage, includes $5 monthly usage, and lists up to 5 GB storage.
+- A volume-backed service is single-replica for this architecture; Railway notes attached volumes constrain overlapping deployments/replicas.
 
 Why selected: lowest operational friction from the existing GitHub repository to a public, persistent, HTTPS pilot. It preserves the deliberate SQLite single-instance architecture.
 
@@ -64,7 +65,7 @@ Verified from Render documentation on 2026-08-30:
 - persistent disks can be attached only to paid services.
 - persistent disks preserve only the mounted path and are attached to one service instance.
 
-Why not first: suitable, but Railway currently presents the simpler/cheaper entry path for this exact single-volume pilot.
+Why not first: suitable, but Railway currently presents the simpler low-friction entry path for this exact single-volume pilot.
 
 ## Architecture consequence
 
