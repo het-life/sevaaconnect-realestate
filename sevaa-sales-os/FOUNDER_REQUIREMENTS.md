@@ -28,16 +28,23 @@ Choose one first lawful source to route into `/quote`: an existing site/profile,
 ### first_buyer — NEEDED AFTER DEPLOYMENT
 Route at least one genuinely interested external buyer/enquiry through the system so simulated assumptions can begin being replaced with observed data.
 
-## Needed only when the workflow reaches the condition
+## Needed before broader public promotion
 
-### buyer_contact_email — NEEDED BEFORE BROADER PUBLIC PROMOTION
-Choose the public sales/contact identity shown to buyers. It is not required to run the technical deployment or a controlled first-pilot enquiry.
+### public_privacy_contact — NEEDED
+Choose a monitored company mailbox for privacy/access/correction/deletion/withdrawal requests and configure it as `SEVAA_PUBLIC_CONTACT_EMAIL` in the host environment. The value is public contact information, not a secret, but it should still be managed through deployment configuration rather than hardcoded into application code.
+
+The controlled first-pilot link can technically operate with the documented fallback contact channel, but broad promotion should wait until this mailbox is configured and `/privacy` has been reviewed against the actual production processors/workflow.
+
+## Needed only when the workflow reaches the condition
 
 ### razorpay_credentials — NEEDED ONLY FOR REAL PAYMENT COLLECTION
 Configure `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `RAZORPAY_WEBHOOK_SECRET` only in the production host secret store when a founder-reviewed approved proposal actually needs a payment link. Never paste values into repository docs or prompts.
 
 ### tax_configuration_ca_review — NEEDED BEFORE MATERIAL SCALE / FINAL TAX AUTOMATION
 Have the company CA confirm GST classification/rate, input-tax-credit treatment, invoicing requirements and actual company-tax regime. Do not send tax portal passwords or DSC credentials.
+
+### privacy_legal_review — NEEDED BEFORE MATERIAL SCALE / 2027 CORE COMMENCEMENT
+Have a qualified adviser re-check the deployed privacy notice, retention approach, actual processors and the DPDP commencement/guidance before material scale and before the 13 May 2027 core commencement milestone recorded in `docs/research/DPDP_PUBLIC_ENQUIRY_2026-08-30.md`.
 
 ### real_acquisition_budget — NEEDED LATER
 After the first paid pilot, approve a maximum monthly acquisition budget inside the project capital envelope. Until then paid acquisition remains paper-only unless explicitly authorized for a controlled experiment.
@@ -55,6 +62,7 @@ The validated pilot is intentionally single-instance SQLite with a persistent vo
 - GitHub connector — connected.
 - Validated Docker deployment artifact — available.
 - Public `/quote` acquisition path — implemented and tested.
+- Public `/privacy` notice + affirmative acknowledgement — implemented and tested on PR #6.
 - Founder and automation authorization model — implemented and tested.
 
 ## Agent rule
