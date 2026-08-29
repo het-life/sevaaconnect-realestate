@@ -32,15 +32,16 @@ As researched and re-checked on 2026-08-30 from Railway's official pricing/docs,
 - secret environment variables
 - deploy-time health checks
 
-Current official pricing-page facts at the re-check:
+Current official Railway docs at the re-check:
 
-- new users can receive a one-time $5 trial credit that expires after 30 days
-- the Free card is headed `$0 per month`, while a bullet on that same card says `30-day free trial with $5 credits, then $1 per month`; therefore the exact post-trial Free charge must be confirmed in the account billing/checkout screen rather than inferred
-- Free lists up to 0.5 GB of volume storage
-- Hobby lists a $5 minimum monthly usage, includes $5 of monthly usage, and lists up to 5 GB storage
-- resource usage can add cost beyond included usage
+- new users can start the Trial without a credit card
+- the Trial grants $5 of one-time credit for up to 30 days
+- after the Trial, Railway documents a Free plan with $1/month of free credit
+- Trial and Free list up to 0.5 GB volume storage
+- Hobby is a paid $5 minimum-usage tier with $5 included usage
+- resource usage can add cost beyond included credits
 
-Provider pricing and account eligibility can change. Verify the actual plan/checkout screen before accepting a charge. Start on the lowest tier that provides verified public networking and persistent-volume behavior for the account; do not upgrade without a measured requirement.
+Provider pricing and account eligibility can change. Start with the no-card Trial/Free path. Treat any upgrade to Hobby/Pro or any excess-use commitment as a separate explicit founder approval gate.
 
 ## Railway pilot configuration
 
@@ -148,11 +149,11 @@ The DPDP implementation research and commencement schedule reviewed on 2026-08-3
 
 The repository is technically ready for a hosted pilot. The latest validated software release and deployment-preflight path are on `main`, but actual account/service creation crosses an external boundary.
 
-ACTION REQUIRED: create/authorize the Railway project and any resulting spend.
+ACTION REQUIRED: authorize/connect the Railway account/project. A paid plan is not required merely to start the current no-card Trial/Free deployment experiment.
 
 WHY: a public host is required to advance from sandbox evidence to a real external enquiry.
 
-COST: Railway's 2026-08-30 pricing page has ambiguous Free-plan wording (`$0 per month` on the card, but `then $1 per month` in the trial bullet). Hobby is clearly $5 minimum monthly usage with $5 included usage. Treat the account checkout/billing screen as authoritative and do not accept a paid plan or excess-use charge without authorization.
+COST: current official Railway docs say the initial Trial can start without a credit card and provides $5 credit for up to 30 days; the documented Free plan then provides $1/month credit. Do not accept Hobby/Pro or excess-use charges without explicit founder approval.
 
 EXPECTED BENEFIT: public HTTPS `/quote` + `/privacy`, persistent data, recoverable backups, and the ability to measure a real acquisition funnel.
 

@@ -32,7 +32,7 @@ Priority is approximately `IMPACT × CONFIDENCE ÷ EFFORT`, with evidence qualit
 
 | ID | Objective | Priority | Status | Dependencies | Acceptance criteria | Measured result |
 |---|---|---:|---|---|---|---|
-| T100 | Deploy validated single-instance pilot to a public HTTPS host | P0 | BLOCKED_EXTERNAL | Founder-authorized Railway account/project and any resulting spend; production secrets; privacy hardening merged | `/api/health` healthy; unauthenticated v2 internal route rejected; founder/automation roles correct; `/quote` and `/privacy` reachable; persistent `/data` survives redeploy | Not run externally yet |
+| T100 | Deploy validated single-instance pilot to a public HTTPS host | P0 | BLOCKED_EXTERNAL | Founder-authorized/connected Railway account/project; production secrets. Start with no-card Trial/Free; paid upgrade only by explicit approval | `/api/health` healthy; unauthenticated v2 internal route rejected; founder/automation roles correct; `/quote` and `/privacy` reachable; persistent `/data` survives redeploy | Not run externally yet |
 | T101 | Run production restore drill | P0 | BLOCKED_BY_T100 | Hosted volume and first deployment | Hosted backup created and restored; app returns healthy; expected synthetic lead survives/reverts exactly as documented | Local/CI backup round-trip only |
 | T102 | Obtain first lawful external enquiry | P0 | BLOCKED_EXTERNAL | T100; founder-approved real traffic source; public contact identity | At least one non-synthetic lead enters through public funnel and is source-attributed | 0 verified external enquiries |
 | T103 | Run first founder-reviewed paid pilot | P0 | BLOCKED_BY_T102 | Qualified real lead, approved scope/price, payment-provider authorization if payment link used | Approved proposal; real buyer acceptance; collected cash verified separately from contract value | ₹0 verified collected cash |
@@ -56,4 +56,4 @@ Priority is approximately `IMPACT × CONFIDENCE ÷ EFFORT`, with evidence qualit
 
 ## Selection rule
 
-Do not build T200+ or T300 merely to fill the queue while T100–T104 are externally blocked. Preserve the validated system and surface the exact external action needed. Once T100 is authorized, execute the post-deploy verification in `docs/spec/DEPLOYMENT.md` before sending real traffic.
+Do not build T200+ or T300 merely to fill the queue while T100–T104 are externally blocked. Preserve the validated system and surface the exact external action needed. Once the Railway account/project is authorized, use the no-card Trial/Free path first and execute the post-deploy verification in `docs/spec/DEPLOYMENT.md` before sending real traffic. A paid hosting upgrade is a separate approval gate, not a prerequisite to attempt T100.

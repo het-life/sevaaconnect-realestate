@@ -1,34 +1,34 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-30T05:05:00+05:30",
+  "updated_at": "2026-08-30T05:18:00+05:30",
   "mission": "Reach sustainable INR 100000/month owner-withdrawable cash while retaining reinvestment and safety reserves.",
-  "mode": "deployment_gate",
+  "mode": "external_host_authorization_blocked",
   "primary_engine": "managed_b2b_sales_os",
   "secondary_engine": "saas_productization_after_paid_demand",
   "market_capital_engine": "paper_only",
   "repository": "het-life/sevaaconnect-realestate",
   "branch": "main",
-  "pull_request": null,
-  "base_branch": "main",
-  "repository_head": "2194d8f82b56df74711aebf66cccdb719e3e025e",
-  "last_verified_release_commit": "2b862a9c72c1c1ec16257e3497aa53712bbb5f30",
+  "last_verified_release_commit": "3b8227b1c8f398a0dc8a1360763791638188ba21",
   "verification": {
     "software_evidence_level": 5,
     "software_evidence_label": "paper/sandbox/shadow",
-    "latest_release_ci": "GitHub Actions run 146 green on the validated main release gate",
-    "pytest": "31 passed",
+    "github_ci": "main run 150 (33281298927) green on 3b8227b1",
+    "pytest": "31 passed on latest functional release line",
     "compose_validation": "passed",
     "docker_image_build": "passed",
     "container_health": "passed on injected platform PORT with mounted persistent volume",
     "container_privilege_drop": "PID 1 verified uid 10001; /data verified uid 10001",
-    "deployment_preflight": "implemented and regression-covered; non-mutating hosted checks ready",
+    "deployment_preflight": "non-mutating six-check verifier implemented and regression-tested",
     "verified_external_enquiries": 0,
     "verified_paid_pilots": 0,
     "verified_collected_cash_inr": 0,
     "open_errors": 0
   },
   "economics": {
-    "starting_capital_range_inr": [50000, 100000],
+    "starting_capital_range_inr": [
+      50000,
+      100000
+    ],
     "planning_subscription_ex_gst_inr": 14999,
     "planning_setup_fee_ex_gst_inr": 14999,
     "target_monthly_withdrawal_inr": 100000,
@@ -48,39 +48,39 @@
     "constrained OpenClaw automation client with no founder approval method",
     "disabled-by-default inbound webhook",
     "public quote/enquiry funnel with honeypot and duplicate-safe ingestion",
+    "public privacy notice, affirmative acknowledgement and versioned audit evidence",
     "process-local public/webhook/service rate limits",
     "founder-gated Razorpay payment-link adapter and verified reconciliation",
     "Dockerfile and local-safe Compose profile",
     "platform PORT and mounted-volume compatible container privilege drop",
     "integrity-checked SQLite backup/restore and restore regression",
     "CI compile/pytest/compose/image/mounted-volume health gate",
+    "non-mutating hosted deployment verifier",
     "Railway pilot deployment and rollback runbook",
     "paper-money economics model",
     "source-attributed funnel ledger with CAC/payback guardrails",
     "founder requirements and error protocol",
     "open-source reuse policy",
-    "validated Sales OS release candidate merged to main",
-    "public privacy notice and affirmative acknowledgement merged to main",
     "DPDP commencement and Rule 3 primary-source implementation research",
-    "deployment preflight automation merged to main",
-    "deployment runbook aligned with validated preflight"
+    "repository authority reconciled to SEVAA Sales OS on main"
   ],
-  "current_bottleneck": "All meaningful P0 repository engineering is complete. Evidence advancement requires founder-authorized public HTTPS hosting, production secrets in the host secret store, a monitored public contact identity, and then lawful real traffic.",
-  "current_task": "T100 — deploy the validated single-instance pilot to public HTTPS.",
-  "next_action": "After hosting authorization, deploy main with Root Directory /sevaa-sales-os, one replica, persistent /data, and /api/health; configure production secrets outside Git; generate HTTPS; run scripts/verify_deployment.py; perform one clearly synthetic end-to-end enquiry plus backup/restore drill; then begin lawful real traffic and measure the first genuine enquiry-to-paid-pilot funnel.",
+  "current_bottleneck": "A public HTTPS deployment is now blocked only by external Railway account/project authorization and production configuration. Current Railway documentation permits a new-account trial without a credit card; no paid plan is required merely to begin the deployment experiment.",
+  "next_action": "After the founder authorizes/connects a Railway account/project, deploy main as one instance with /data persistent storage, set production secrets in the host secret store, generate the HTTPS domain, run scripts/verify_deployment.py, complete the synthetic-lead and restore drill, then route lawful real traffic to /quote.",
   "next_files": [
     "docs/spec/DEPLOYMENT.md",
     "CURRENT.md",
     "TODO.md",
     "FOUNDER_REQUIREMENTS.md",
     "scripts/verify_deployment.py",
+    "backend/public_enquiry.py",
     "scripts/funnel_economics.py"
   ],
   "external_gates": [
-    "founder-authorized public hosting account/project and any resulting spend",
+    "Railway account/project login or authorization; initial trial can start without a credit card according to current official docs",
     "production founder and automation secrets in host secret store",
     "monitored public privacy/contact mailbox before broad promotion",
     "lawful founder-approved real traffic source",
+    "paid Railway upgrade or excess-use commitment only if the free/trial limits prove insufficient",
     "payment-provider credentials only when a founder-reviewed real buyer requires collection"
   ],
   "rules": [
@@ -90,6 +90,7 @@
     "Simulation is not revenue; only verified collected cash counts as real revenue.",
     "No autonomous real spend, borrowing, trading, payouts, refunds, price overrides, or unsolicited bulk messaging.",
     "Keep one application instance while SQLite is the deployment database; PostgreSQL is a measured scale trigger, not pre-pilot work.",
-    "Do not broadly promote the public quote form without a monitored privacy contact and a reviewed privacy notice."
+    "Do not broadly promote the public quote form without a monitored privacy contact and a reviewed privacy notice.",
+    "Do not accept a paid Railway plan or excess-use commitment without explicit founder approval; use the no-card trial/free path first when available."
   ]
 }
