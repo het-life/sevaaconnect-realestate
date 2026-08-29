@@ -20,6 +20,7 @@ def setup_function():
     os.environ["SEVAA_AUTOMATION_TOKEN"] = "automation-public-test"
     os.environ.pop("SEVAA_WEBHOOK_TOKEN", None)
     os.environ.pop("SEVAA_ALLOW_LEGACY_V1", None)
+    os.environ.pop("SEVAA_PUBLIC_CONTACT_EMAIL", None)
     reset_rate_limiter()
     if TEST_DB.exists():
         TEST_DB.unlink()
@@ -35,6 +36,7 @@ def enquiry(**overrides):
         "requirement": "20ft modular sales office",
         "budget_min": 600000,
         "timeline_days": 45,
+        "privacy_acknowledged": True,
     }
     payload.update(overrides)
     return payload
@@ -49,7 +51,15 @@ def test_public_quote_accepts_lead_with_hardened_auth_enabled():
         page = client.get("/quote")
         assert page.status_code == 200
         assert "Request a project quote" in page.text
+        assert 'href="/privacy"' in page.text
+        assert 'name="privacy_acknowledged"' in page.text
         assert "SEVAA_AUTOMATION_TOKEN" not in page.text
+
+        privacy = client.get("/privacy")
+        assert privacy.status_code == 200
+        assert "Quote enquiry privacy notice" in privacy.text
+        assert "Information you choose to provide" in privacy.text
+        assert "consent-withdrawal" in privacy.text
 
         created = client.post(
             "/api/v2/public/enquiries",
@@ -74,6 +84,35 @@ def test_public_quote_accepts_lead_with_hardened_auth_enabled():
         matches = [lead for lead in leads if lead["email"] == "public@example.com"]
         assert len(matches) == 1
         assert matches[0]["source"] == "public-quote"
+
+
+def test_public_enquiry_rejects_missing_privacy_acknowledgement():
+    with TestClient(app) as client:
+        missing = enquiry()
+        missing.pop("privacy_acknowledged")
+        response = client.post("/api/v2/public/enquiries", json=missing)
+        assert response.status_code == 422
+        assert "privacy notice acknowledgement is required" in response.text
+
+        rejected = client.post(
+            "/api/v2/public/enquiries",
+            json=enquiry(privacy_acknowledged=False),
+        )
+        assert rejected.status_code == 422
+        assert "privacy notice acknowledgement is required" in rejected.text
+
+
+def test_privacy_notice_uses_configured_contact_without_exposing_secret_values():
+    os.environ["SEVAA_PUBLIC_CONTACT_EMAIL"] = "privacy@example.com"
+    try:
+        with TestClient(app) as client:
+            page = client.get("/privacy")
+        assert page.status_code == 200
+        assert 'mailto:privacy@example.com' in page.text
+        assert "privacy@example.com" in page.text
+        assert "SEVAA_PUBLIC_CONTACT_EMAIL" not in page.text
+    finally:
+        os.environ.pop("SEVAA_PUBLIC_CONTACT_EMAIL", None)
 
 
 def test_public_quote_honeypot_is_acknowledged_but_not_persisted():
