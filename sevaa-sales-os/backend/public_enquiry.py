@@ -7,7 +7,10 @@ from fastapi import Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, model_validator
 
+import backend.app as base
 from backend.phase2 import ActorContext, LeadCreateV2, app, create_lead_v2
+
+PRIVACY_NOTICE_VERSION = "2026-08-30"
 
 
 class PublicEnquiryCreate(BaseModel):
@@ -43,6 +46,20 @@ def _privacy_contact_html() -> str:
     )
 
 
+def _record_privacy_acknowledgement(lead_id: int) -> None:
+    # Store only the notice version and event timestamp already provided by the
+    # existing audit mechanism. Do not duplicate contact data or collect IP/device
+    # identifiers merely for consent evidence.
+    with base.db() as conn:
+        base.audit(
+            conn,
+            lead_id,
+            "privacy.notice_acknowledged",
+            f"Public quote privacy notice version={PRIVACY_NOTICE_VERSION} acknowledged",
+            "public-quote",
+        )
+
+
 @app.get("/privacy", response_class=HTMLResponse)
 def public_privacy_notice():
     contact = _privacy_contact_html()
@@ -59,7 +76,7 @@ body{{margin:0;background:#07100e;color:#eef7f3;font-family:-apple-system,BlinkM
 </head>
 <body><main class="wrap"><article class="card">
 <h1>Quote enquiry privacy notice</h1>
-<p class="meta">Effective 30 August 2026 · applies to the SEVAA public quote form</p>
+<p class="meta">Version {PRIVACY_NOTICE_VERSION} · applies to the SEVAA public quote form</p>
 <p>This notice explains the personal information processed when you choose to submit a project enquiry. Do not use the form for passwords, government identifiers, payment credentials, medical information, or other sensitive material.</p>
 <h2>Information you choose to provide</h2>
 <ul><li>Name and optional company.</li><li>At least one contact method: phone number or email address.</li><li>Optional city, project budget range, and expected timeline.</li><li>Your project requirement and any details you type into that field.</li></ul>
@@ -143,13 +160,23 @@ def create_public_enquiry(
     except HTTPException as exc:
         detail = exc.detail
         if exc.status_code == 409 and isinstance(detail, dict) and detail.get("code") == "duplicate_lead":
-            return {"accepted": True, "deduplicated": True}
+            existing_lead_id = int(detail["existing_lead_id"])
+            _record_privacy_acknowledgement(existing_lead_id)
+            return {
+                "accepted": True,
+                "deduplicated": True,
+                "privacy_notice_version": PRIVACY_NOTICE_VERSION,
+            }
         raise
+
+    if not result.get("idempotent_replay"):
+        _record_privacy_acknowledgement(int(result["id"]))
     return {
         "accepted": True,
         "reference": f"L{result['id']}",
         "idempotent_replay": bool(result.get("idempotent_replay")),
+        "privacy_notice_version": PRIVACY_NOTICE_VERSION,
     }
 
 
-__all__ = ["PublicEnquiryCreate"]
+__all__ = ["PRIVACY_NOTICE_VERSION", "PublicEnquiryCreate"]
