@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feat/sevaa-sales-os-mvp
+      - '**'
     paths:
       - 'sevaa-sales-os/**'
       - '.github/workflows/sevaa-sales-os.yml'

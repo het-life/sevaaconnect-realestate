@@ -38,8 +38,12 @@
 - Added public `/quote` and duplicate-safe `/api/v2/public/enquiries` acquisition flow with a honeypot and tighter anonymous rate limit.
 - Added founder-gated secure proposal shares, Razorpay payment-link integration and verified payment reconciliation without autonomous provider notifications.
 - Made the container consume hosting-platform `PORT`, repair ownership on a mounted SQLite volume and permanently drop to uid/gid 10001 before starting Uvicorn.
-- Strengthened CI to prove injected-port operation, persistent-volume ownership, non-root PID 1 and public health; current suite reports 26 passing tests.
+- Strengthened CI to prove injected-port operation, persistent-volume ownership, non-root PID 1 and public health; initial deployment suite reported 26 passing tests.
 - Recorded and fixed a false-negative container UID test by inspecting PID 1 instead of the diagnostic `docker exec` process.
 - Selected Railway as the shortest documented pilot-host path after current provider research; documented persistent volume, backups, health checks, rollback and external spend gate.
 - Reclassified PostgreSQL as a measured scale trigger rather than a pre-pilot dependency.
 - Reprioritized the task queue around Level-6 real-world validation: public deployment, restore drill, first external enquiry, first paid pilot, then observed funnel economics.
+- Added standalone `/privacy` notice for public quote enquiries with itemised data categories, stated sales purposes, request route, retention/security explanation and sensitive-data minimisation warning.
+- Added server-enforced affirmative privacy-notice acknowledgement to `/api/v2/public/enquiries`; public form/API regression coverage now brings the tested implementation to 28 passing tests.
+- Added `SEVAA_PUBLIC_CONTACT_EMAIL` configuration for a monitored privacy contact before broad promotion, without hardcoding contact identity into application code.
+- Recorded primary-source DPDP Act/Rules commencement and Rule 3 implementation research; this is an early-readiness control and not a claim of legal certification.

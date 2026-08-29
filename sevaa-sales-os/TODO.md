@@ -26,12 +26,13 @@ Priority is approximately `IMPACT × CONFIDENCE ÷ EFFORT`, with evidence qualit
 - [x] T020 — Razorpay adapter, founder-gated approved-proposal payment links, secure proposal shares and verified payment reconciliation
 - [x] T021 — Container consumes injected platform `PORT` and handles root-owned persistent volume before dropping to uid/gid 10001
 - [x] T022 — Railway pilot deployment procedure and rollback documented from current provider documentation
+- [x] T023 — Public `/privacy` notice, explicit privacy acknowledgement, data-minimisation warning and configurable privacy contact; 28-test release gate green on implementation head
 
 ## P0 — evidence advancement
 
 | ID | Objective | Priority | Status | Dependencies | Acceptance criteria | Measured result |
 |---|---|---:|---|---|---|---|
-| T100 | Deploy validated single-instance pilot to a public HTTPS host | P0 | BLOCKED_EXTERNAL | Founder-authorized Railway account/project and any resulting spend; production secrets | `/api/health` healthy; unauthenticated v2 internal route rejected; founder/automation roles correct; `/quote` reachable; persistent `/data` survives redeploy | Not run externally yet |
+| T100 | Deploy validated single-instance pilot to a public HTTPS host | P0 | BLOCKED_EXTERNAL | Founder-authorized Railway account/project and any resulting spend; production secrets; privacy hardening merged | `/api/health` healthy; unauthenticated v2 internal route rejected; founder/automation roles correct; `/quote` and `/privacy` reachable; persistent `/data` survives redeploy | Not run externally yet |
 | T101 | Run production restore drill | P0 | BLOCKED_BY_T100 | Hosted volume and first deployment | Hosted backup created and restored; app returns healthy; expected synthetic lead survives/reverts exactly as documented | Local/CI backup round-trip only |
 | T102 | Obtain first lawful external enquiry | P0 | BLOCKED_EXTERNAL | T100; founder-approved real traffic source; public contact identity | At least one non-synthetic lead enters through public funnel and is source-attributed | 0 verified external enquiries |
 | T103 | Run first founder-reviewed paid pilot | P0 | BLOCKED_BY_T102 | Qualified real lead, approved scope/price, payment-provider authorization if payment link used | Approved proposal; real buyer acceptance; collected cash verified separately from contract value | ₹0 verified collected cash |

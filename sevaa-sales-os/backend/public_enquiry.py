@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import html
+import os
+
 from fastapi import Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, model_validator
 
+import backend.app as base
 from backend.phase2 import ActorContext, LeadCreateV2, app, create_lead_v2
+
+PRIVACY_NOTICE_VERSION = "2026-08-30"
 
 
 class PublicEnquiryCreate(BaseModel):
@@ -17,13 +23,74 @@ class PublicEnquiryCreate(BaseModel):
     budget_min: int | None = Field(default=None, ge=0)
     budget_max: int | None = Field(default=None, ge=0)
     timeline_days: int | None = Field(default=None, ge=0, le=3650)
+    privacy_acknowledged: bool = False
     website: str | None = Field(default=None, max_length=200)
 
     @model_validator(mode="after")
-    def require_contact(self):
+    def validate_public_enquiry(self):
         if not (self.phone and self.phone.strip()) and not (self.email and self.email.strip()):
             raise ValueError("phone or email is required")
+        if self.privacy_acknowledged is not True:
+            raise ValueError("privacy notice acknowledgement is required")
         return self
+
+
+def _privacy_contact_html() -> str:
+    contact = os.getenv("SEVAA_PUBLIC_CONTACT_EMAIL", "").strip()
+    if contact:
+        safe = html.escape(contact, quote=True)
+        return f'<a href="mailto:{safe}">{safe}</a>'
+    return (
+        "the same SEVAA business contact or channel through which you received "
+        "the quote link; a dedicated public privacy email has not yet been configured"
+    )
+
+
+def _record_privacy_acknowledgement(lead_id: int) -> None:
+    # Store only the notice version and event timestamp already provided by the
+    # existing audit mechanism. Do not duplicate contact data or collect IP/device
+    # identifiers merely for consent evidence.
+    with base.db() as conn:
+        base.audit(
+            conn,
+            lead_id,
+            "privacy.notice_acknowledged",
+            f"Public quote privacy notice version={PRIVACY_NOTICE_VERSION} acknowledged",
+            "public-quote",
+        )
+
+
+@app.get("/privacy", response_class=HTMLResponse)
+def public_privacy_notice():
+    contact = _privacy_contact_html()
+    return HTMLResponse(
+        f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SEVAA quote privacy notice</title>
+<style>
+body{{margin:0;background:#07100e;color:#eef7f3;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}}.wrap{{max-width:760px;margin:0 auto;padding:42px 18px}}.card{{background:#101b18;border:1px solid #294139;border-radius:20px;padding:24px}}h1{{font-size:28px;margin:0 0 8px}}h2{{font-size:17px;margin:24px 0 8px}}p,li{{color:#b4c6bf;line-height:1.55}}a{{color:#9df5c9}}.meta{{font-size:12px;color:#7f968e}}ul{{padding-left:20px}}
+</style>
+</head>
+<body><main class="wrap"><article class="card">
+<h1>Quote enquiry privacy notice</h1>
+<p class="meta">Version {PRIVACY_NOTICE_VERSION} · applies to the SEVAA public quote form</p>
+<p>This notice explains the personal information processed when you choose to submit a project enquiry. Do not use the form for passwords, government identifiers, payment credentials, medical information, or other sensitive material.</p>
+<h2>Information you choose to provide</h2>
+<ul><li>Name and optional company.</li><li>At least one contact method: phone number or email address.</li><li>Optional city, project budget range, and expected timeline.</li><li>Your project requirement and any details you type into that field.</li></ul>
+<h2>Why it is used</h2>
+<ul><li>To receive, evaluate, score and route your project enquiry.</li><li>To maintain sales follow-up and audit records so the enquiry is not lost or duplicated.</li><li>To prepare a proposal for founder review if the enquiry is suitable.</li><li>To respond through a human/founder-reviewed sales process. Submitting the form does not itself authorize a contract, payment, or autonomous outbound message.</li></ul>
+<h2>Who can act on it</h2>
+<p>The Sales OS can perform internal automation such as scoring and follow-up scheduling. Proposal approval, buyer-share creation and payment-link creation remain founder-gated. Production service providers may process data only as needed to host or operate the service.</p>
+<h2>Your choices and requests</h2>
+<p>You may choose not to submit the form. For access, correction, deletion, consent-withdrawal or other privacy requests, contact {contact}. A request may require reasonable verification before records are changed or deleted.</p>
+<h2>Retention and security</h2>
+<p>Enquiry records are kept only for a legitimate sales, audit, legal or operational need and should be deleted or anonymized when that need ends. The service uses access controls, audit records, backups and secret handling, but no internet service can guarantee absolute security.</p>
+<p><a href="/quote">Return to the quote form</a></p>
+</article></main></body></html>"""
+    )
 
 
 @app.get("/quote", response_class=HTMLResponse)
@@ -36,26 +103,28 @@ def public_quote_page():
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Request a SEVAA project quote</title>
 <style>
-body{margin:0;background:#07100e;color:#eef7f3;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.wrap{max-width:760px;margin:0 auto;padding:42px 18px}.card{background:#101b18;border:1px solid #294139;border-radius:20px;padding:24px}h1{font-size:28px;margin:0 0 8px}.sub{color:#9ab0a8;line-height:1.5;margin:0 0 22px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}label{display:block;color:#9ab0a8;font-size:12px;margin:0 0 5px}input,textarea{width:100%;box-sizing:border-box;background:#09130f;color:#eef7f3;border:1px solid #2a463c;border-radius:10px;padding:11px;font:inherit}textarea{min-height:110px;resize:vertical}button{margin-top:18px;background:#9df5c9;color:#062015;border:0;border-radius:10px;padding:12px 17px;font-weight:760;cursor:pointer}.note{font-size:11px;color:#7f968e;margin-top:13px}.status{min-height:20px;margin-top:12px;color:#9df5c9}.trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}@media(max-width:650px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+body{margin:0;background:#07100e;color:#eef7f3;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.wrap{max-width:760px;margin:0 auto;padding:42px 18px}.card{background:#101b18;border:1px solid #294139;border-radius:20px;padding:24px}h1{font-size:28px;margin:0 0 8px}.sub{color:#9ab0a8;line-height:1.5;margin:0 0 22px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}label{display:block;color:#9ab0a8;font-size:12px;margin:0 0 5px}input,textarea{width:100%;box-sizing:border-box;background:#09130f;color:#eef7f3;border:1px solid #2a463c;border-radius:10px;padding:11px;font:inherit}textarea{min-height:110px;resize:vertical}button{margin-top:18px;background:#9df5c9;color:#062015;border:0;border-radius:10px;padding:12px 17px;font-weight:760;cursor:pointer}.note{font-size:11px;color:#7f968e;margin-top:13px;line-height:1.5}.status{min-height:20px;margin-top:12px;color:#9df5c9}.trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}.consent{display:flex;gap:10px;align-items:flex-start;color:#b4c6bf;font-size:12px;line-height:1.5;margin-top:14px}.consent input{width:auto;margin-top:3px}.consent a{color:#9df5c9}@media(max-width:650px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
 </style>
 </head>
 <body><main class="wrap"><section class="card"><h1>Request a project quote</h1><p class="sub">Tell us what you need. Your enquiry enters the SEVAA review pipeline; pricing and commitments are reviewed before anything is approved.</p>
 <form id="quoteForm"><div class="grid">
-<div><label>Name *</label><input name="name" required maxlength="120"></div>
-<div><label>Company</label><input name="company" maxlength="120"></div>
-<div><label>Phone</label><input name="phone" maxlength="40" inputmode="tel"></div>
-<div><label>Email</label><input name="email" maxlength="160" type="email"></div>
-<div><label>City</label><input name="city" maxlength="120"></div>
+<div><label>Name *</label><input name="name" required maxlength="120" autocomplete="name"></div>
+<div><label>Company</label><input name="company" maxlength="120" autocomplete="organization"></div>
+<div><label>Phone</label><input name="phone" maxlength="40" inputmode="tel" autocomplete="tel"></div>
+<div><label>Email</label><input name="email" maxlength="160" type="email" autocomplete="email"></div>
+<div><label>City</label><input name="city" maxlength="120" autocomplete="address-level2"></div>
 <div><label>Timeline (days)</label><input name="timeline_days" min="0" max="3650" type="number"></div>
 <div><label>Budget from (₹)</label><input name="budget_min" min="0" type="number"></div>
 <div><label>Budget to (₹)</label><input name="budget_max" min="0" type="number"></div>
 <div class="full"><label>Project requirement *</label><textarea name="requirement" required maxlength="1000" placeholder="Example: 20ft modular sales office, interiors required, delivery target 45 days"></textarea></div>
 <div class="trap" aria-hidden="true"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
-</div><button type="submit">Send enquiry</button><div class="status" id="status"></div><div class="note">Submitting this form does not create a contract, payment obligation, or automatic external message.</div></form>
+</div>
+<label class="consent"><input type="checkbox" name="privacy_acknowledged" required><span>I have read the <a href="/privacy" target="_blank" rel="noopener">quote enquiry privacy notice</a> and understand that the information I submit will be used to evaluate and follow up this project enquiry.</span></label>
+<button type="submit">Send enquiry</button><div class="status" id="status"></div><div class="note">Submitting this form does not create a contract, payment obligation, or automatic external message. Do not include passwords, government IDs, payment credentials, medical information, or other sensitive personal data.</div></form>
 </section></main>
 <script>
 const form=document.getElementById('quoteForm'),statusEl=document.getElementById('status');
-form.addEventListener('submit',async e=>{e.preventDefault();statusEl.textContent='Sending…';const data=Object.fromEntries(new FormData(form).entries());for(const key of ['budget_min','budget_max','timeline_days'])data[key]=data[key]?Number(data[key]):null;try{const r=await fetch('/api/v2/public/enquiries',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':'quote-'+crypto.randomUUID()},body:JSON.stringify(data)});const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(typeof body.detail==='string'?body.detail:'Please check the form and try again.');statusEl.textContent='Enquiry received. We will review it before any proposal is issued.';form.reset()}catch(err){statusEl.textContent=err.message||'Unable to send enquiry.'}});
+form.addEventListener('submit',async e=>{e.preventDefault();statusEl.textContent='Sending…';const data=Object.fromEntries(new FormData(form).entries());for(const key of ['budget_min','budget_max','timeline_days'])data[key]=data[key]?Number(data[key]):null;data.privacy_acknowledged=form.elements.privacy_acknowledged.checked;try{const r=await fetch('/api/v2/public/enquiries',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':'quote-'+crypto.randomUUID()},body:JSON.stringify(data)});const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(typeof body.detail==='string'?body.detail:'Please check the form and try again.');statusEl.textContent='Enquiry received. We will review it before any proposal is issued.';form.reset()}catch(err){statusEl.textContent=err.message||'Unable to send enquiry.'}});
 </script></body></html>"""
     )
 
@@ -91,13 +160,23 @@ def create_public_enquiry(
     except HTTPException as exc:
         detail = exc.detail
         if exc.status_code == 409 and isinstance(detail, dict) and detail.get("code") == "duplicate_lead":
-            return {"accepted": True, "deduplicated": True}
+            existing_lead_id = int(detail["existing_lead_id"])
+            _record_privacy_acknowledgement(existing_lead_id)
+            return {
+                "accepted": True,
+                "deduplicated": True,
+                "privacy_notice_version": PRIVACY_NOTICE_VERSION,
+            }
         raise
+
+    if not result.get("idempotent_replay"):
+        _record_privacy_acknowledgement(int(result["id"]))
     return {
         "accepted": True,
         "reference": f"L{result['id']}",
         "idempotent_replay": bool(result.get("idempotent_replay")),
+        "privacy_notice_version": PRIVACY_NOTICE_VERSION,
     }
 
 
-__all__ = ["PublicEnquiryCreate"]
+__all__ = ["PRIVACY_NOTICE_VERSION", "PublicEnquiryCreate"]
