@@ -65,7 +65,8 @@ jobs:
           trap 'docker rm --force sevaa-sales-os-ci >/dev/null 2>&1 || true; docker volume rm sevaa-sales-os-ci-data >/dev/null 2>&1 || true' EXIT
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:18000/api/health >/dev/null; then
-              docker exec sevaa-sales-os-ci python -c "import os; assert os.geteuid() == 10001"
+              docker exec sevaa-sales-os-ci sh -c "awk '/^Uid:/{exit !(\$2==10001)}' /proc/1/status"
+              docker exec sevaa-sales-os-ci sh -c 'test "$(stat -c %u /data)" = "10001"'
               exit 0
             fi
             sleep 1
