@@ -44,6 +44,15 @@
 - Reclassified PostgreSQL as a measured scale trigger rather than a pre-pilot dependency.
 - Reprioritized the task queue around Level-6 real-world validation: public deployment, restore drill, first external enquiry, first paid pilot, then observed funnel economics.
 - Added standalone `/privacy` notice for public quote enquiries with itemised data categories, stated sales purposes, request route, retention/security explanation and sensitive-data minimisation warning.
-- Added server-enforced affirmative privacy-notice acknowledgement to `/api/v2/public/enquiries`; public form/API regression coverage now brings the tested implementation to 28 passing tests.
+- Added server-enforced affirmative privacy-notice acknowledgement to `/api/v2/public/enquiries`; public form/API regression coverage brought that implementation gate to 28 passing tests.
 - Added `SEVAA_PUBLIC_CONTACT_EMAIL` configuration for a monitored privacy contact before broad promotion, without hardcoding contact identity into application code.
 - Recorded primary-source DPDP Act/Rules commencement and Rule 3 implementation research; this is an early-readiness control and not a claim of legal certification.
+- Added non-mutating public deployment verification and reconciled the no-card Railway Trial/Free path while retaining explicit approval for paid upgrades/excess use.
+- Reconciled root `PROJECT_STATE.md` with the authoritative SEVAA objective and archived the old DealLens project state so future agents cannot follow contradictory goals.
+- Corrected stale compact agent context that incorrectly described Next.js/PostgreSQL/Redis as the current architecture; current stack is FastAPI + SQLite + vanilla HTML/JS.
+- Added a machine-readable registry covering coordinator, sales, quotation, support, marketing, media, operations, finance, trading research and trading risk/execution roles.
+- Added shared work-claim protocol, append-only structured task-result telemetry schema and derived scorecards.
+- Added `scripts/agent_maintenance.py` to validate registry/claims/events/scorecard freshness and render performance reports.
+- Added evidence-aware agent scoring that refuses to rate a role with fewer than five accountable runtime observations and does not penalize legitimate `blocked_external`/`cancelled` outcomes.
+- Enforced multi-agent control-plane validation in CI and added five dedicated evaluator/coordination regression tests.
+- Verified the merged control-plane tree with **36 passing pytest tests**, Compose validation, real Docker build and mounted-volume/non-root live container smoke.

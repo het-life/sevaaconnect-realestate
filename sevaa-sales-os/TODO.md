@@ -26,7 +26,8 @@ Priority is approximately `IMPACT × CONFIDENCE ÷ EFFORT`, with evidence qualit
 - [x] T020 — Razorpay adapter, founder-gated approved-proposal payment links, secure proposal shares and verified payment reconciliation
 - [x] T021 — Container consumes injected platform `PORT` and handles root-owned persistent volume before dropping to uid/gid 10001
 - [x] T022 — Railway pilot deployment procedure and rollback documented from current provider documentation
-- [x] T023 — Public `/privacy` notice, explicit privacy acknowledgement, data-minimisation warning and configurable privacy contact; 28-test release gate green on implementation head
+- [x] T023 — Public `/privacy` notice, explicit privacy acknowledgement, data-minimisation warning and configurable privacy contact
+- [x] T024 — Multi-agent control plane: authoritative state reconciliation, 10-role registry, work claims, task telemetry, honest scorecards, external-block-aware performance evaluator, CI validation and 36-test release gate
 
 ## P0 — evidence advancement
 
@@ -56,4 +57,4 @@ Priority is approximately `IMPACT × CONFIDENCE ÷ EFFORT`, with evidence qualit
 
 ## Selection rule
 
-Do not build T200+ or T300 merely to fill the queue while T100–T104 are externally blocked. Preserve the validated system and surface the exact external action needed. Once the Railway account/project is authorized, use the no-card Trial/Free path first and execute the post-deploy verification in `docs/spec/DEPLOYMENT.md` before sending real traffic. A paid hosting upgrade is a separate approval gate, not a prerequisite to attempt T100.
+Do not build T200+ or T300 merely to fill the queue while T100–T104 are externally blocked. Preserve the validated system, maintain agent telemetry/control-plane integrity, and surface the exact external action needed. Once the Railway account/project is authorized, use the no-card Trial/Free path first and execute the post-deploy verification in `docs/spec/DEPLOYMENT.md` before sending real traffic. A paid hosting upgrade is a separate approval gate, not a prerequisite to attempt T100.

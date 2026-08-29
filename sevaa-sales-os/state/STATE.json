@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-30T05:18:00+05:30",
+  "updated_at": "2026-08-30T05:18:30+05:30",
   "mission": "Reach sustainable INR 100000/month owner-withdrawable cash while retaining reinvestment and safety reserves.",
   "mode": "external_host_authorization_blocked",
   "primary_engine": "managed_b2b_sales_os",
@@ -8,12 +8,14 @@
   "market_capital_engine": "paper_only",
   "repository": "het-life/sevaaconnect-realestate",
   "branch": "main",
-  "last_verified_release_commit": "3b8227b1c8f398a0dc8a1360763791638188ba21",
+  "last_verified_release_commit": "00d149a1284b073fd8dd05bcfc4140fa0fafd94c",
   "verification": {
     "software_evidence_level": 5,
     "software_evidence_label": "paper/sandbox/shadow",
-    "github_ci": "main run 150 (33281298927) green on 3b8227b1",
-    "pytest": "31 passed on latest functional release line",
+    "verified_git_tree": "c67f9046466972992f440a8ec34310c9a2f59389",
+    "github_ci": "PR #10 run 167 (33281766734) green on merge ref 49ef06de; merge ref tree exactly equals main commit 00d149a tree",
+    "agent_control_plane": "10 registered roles; registry/claims/events/scorecards validation passed",
+    "pytest": "36 passed in 1.29s",
     "compose_validation": "passed",
     "docker_image_build": "passed",
     "container_health": "passed on injected platform PORT with mounted persistent volume",
@@ -24,11 +26,21 @@
     "verified_collected_cash_inr": 0,
     "open_errors": 0
   },
+  "agent_system": {
+    "registry": "docs/agent/REGISTRY.json",
+    "protocol": "docs/agent/PROTOCOL.md",
+    "active_work": "state/ACTIVE_WORK.json",
+    "event_log": "state/AGENT_EVENTS.jsonl",
+    "scorecards": "state/AGENT_SCORECARDS.json",
+    "maintenance_command": "python scripts/agent_maintenance.py --check",
+    "registered_roles": 10,
+    "minimum_accountable_runs_for_score": 5,
+    "historical_runtime_telemetry_available": false,
+    "baseline_performance_status": "INSUFFICIENT_RUNTIME_EVIDENCE",
+    "blocked_external_penalizes_performance": false
+  },
   "economics": {
-    "starting_capital_range_inr": [
-      50000,
-      100000
-    ],
+    "starting_capital_range_inr": [50000, 100000],
     "planning_subscription_ex_gst_inr": 14999,
     "planning_setup_fee_ex_gst_inr": 14999,
     "target_monthly_withdrawal_inr": 100000,
@@ -62,14 +74,25 @@
     "founder requirements and error protocol",
     "open-source reuse policy",
     "DPDP commencement and Rule 3 primary-source implementation research",
-    "repository authority reconciled to SEVAA Sales OS on main"
+    "repository authority reconciled to SEVAA Sales OS on main",
+    "old DealLens project state archived to remove contradictory agent authority",
+    "compact agent architecture context reconciled to FastAPI SQLite vanilla HTML/JS",
+    "10-role multi-agent registry and coordination protocol",
+    "active-work claims and structured append-only task-result telemetry",
+    "evidence-aware runtime scorecards with external blockers excluded from accountable scoring",
+    "CI-enforced agent control-plane validation",
+    "36-test release gate for merged multi-agent control plane"
   ],
-  "current_bottleneck": "A public HTTPS deployment is now blocked only by external Railway account/project authorization and production configuration. Current Railway documentation permits a new-account trial without a credit card; no paid plan is required merely to begin the deployment experiment.",
-  "next_action": "After the founder authorizes/connects a Railway account/project, deploy main as one instance with /data persistent storage, set production secrets in the host secret store, generate the HTTPS domain, run scripts/verify_deployment.py, complete the synthetic-lead and restore drill, then route lawful real traffic to /quote.",
+  "current_bottleneck": "A public HTTPS deployment is blocked only by external Railway account/project authorization and production configuration. Current Railway documentation permits a new-account trial without a credit card; no paid plan is required merely to begin the deployment experiment.",
+  "current_task": "T100 — deploy the validated single-instance pilot to public HTTPS.",
+  "next_action": "After the founder authorizes/connects a Railway account/project, deploy main as one instance with /data persistent storage, set production secrets in the host secret store, generate the HTTPS domain, run scripts/verify_deployment.py, complete the synthetic-lead and restore drill, then route lawful real traffic to /quote and record structured agent task results.",
   "next_files": [
-    "docs/spec/DEPLOYMENT.md",
+    "docs/agent/BOOT.txt",
     "CURRENT.md",
     "TODO.md",
+    "docs/agent/REGISTRY.json",
+    "state/ACTIVE_WORK.json",
+    "docs/spec/DEPLOYMENT.md",
     "FOUNDER_REQUIREMENTS.md",
     "scripts/verify_deployment.py",
     "backend/public_enquiry.py",
@@ -84,13 +107,17 @@
     "payment-provider credentials only when a founder-reviewed real buyer requires collection"
   ],
   "rules": [
-    "Do not replay conversation history when STATE.json is sufficient.",
+    "Do not replay conversation history when repository persistent state is sufficient.",
+    "Before substantial shared work, read the agent registry and active-work claims and use a narrow branch/scope.",
+    "Run scripts/agent_maintenance.py --check before merging agent/control-plane changes.",
+    "After a meaningful terminal agent task, append structured telemetry and regenerate scorecards; do not invent missing historical metrics.",
     "Never store secret values in Git or logs.",
     "Turn repeated operations into code.",
     "Simulation is not revenue; only verified collected cash counts as real revenue.",
     "No autonomous real spend, borrowing, trading, payouts, refunds, price overrides, or unsolicited bulk messaging.",
     "Keep one application instance while SQLite is the deployment database; PostgreSQL is a measured scale trigger, not pre-pilot work.",
     "Do not broadly promote the public quote form without a monitored privacy contact and a reviewed privacy notice.",
-    "Do not accept a paid Railway plan or excess-use commitment without explicit founder approval; use the no-card trial/free path first when available."
+    "Do not accept a paid Railway plan or excess-use commitment without explicit founder approval; use the no-card trial/free path first when available.",
+    "blocked_external and cancelled outcomes remain visible in telemetry but do not lower accountable agent performance scores."
   ]
 }
