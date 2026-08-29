@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${SEVAA_POSTGRES_DB:-sevaa}
+      POSTGRES_USER: ${SEVAA_POSTGRES_USER:-sevaa}
+      POSTGRES_PASSWORD: ${SEVAA_POSTGRES_PASSWORD:?set SEVAA_POSTGRES_PASSWORD}
+    volumes:
+      - sevaa-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${SEVAA_POSTGRES_USER:-sevaa} -d ${SEVAA_POSTGRES_DB:-sevaa}
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  sales-os:
+    environment:
+      SEVAA_DATABASE_URL: postgresql://${SEVAA_POSTGRES_USER:-sevaa}:${SEVAA_POSTGRES_PASSWORD:?set SEVAA_POSTGRES_PASSWORD}@postgres:5432/${SEVAA_POSTGRES_DB:-sevaa}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  sevaa-postgres:
