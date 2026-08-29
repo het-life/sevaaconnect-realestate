@@ -1,32 +1,39 @@
-# DealLens
+# SEVAA Revenue Systems
 
-DealLens is a private, browser-based real-estate deal analyzer designed to help brokers and investors reject weak deals quickly and investigate stronger ones.
+This repository contains multiple experiments, but the **authoritative active project is `sevaa-sales-os/`**.
 
-## Current MVP
+## Active objective
 
-The public demo calculates:
+Build and validate a low-touch, lawful SEVAA sales/revenue operating system that can move a real buyer from public enquiry to qualified lead, founder-approved proposal, and verified payment while keeping consequential actions founder-gated.
 
-- monthly EMI;
-- monthly cash flow;
-- gross rental yield;
-- cap rate;
-- cash-on-cash return;
-- an indicative deal score.
+## Agent entry point
 
-All calculations run in the browser. No deal data is uploaded by the demo.
+Before substantial work, read in this order:
 
-## Run locally
+1. `sevaa-sales-os/CURRENT.md`
+2. `sevaa-sales-os/TODO.md`
+3. `sevaa-sales-os/MISSION.md`
+4. `sevaa-sales-os/FOUNDER_REQUIREMENTS.md`
+5. `sevaa-sales-os/docs/spec/DEPLOYMENT.md` when deployment is the bottleneck
 
-Open `index.html` in a modern browser, or serve the repository with any static web server.
+Do not infer the repository mission from the top-level static demo files.
 
-## Commercial validation
+## Current evidence
 
-See `MONETIZATION.md` for pricing, validation thresholds, checkout options, and the first-customer experiment.
+SEVAA Sales OS software operation is at **Level 5 — paper/sandbox/shadow**. The latest validated `main` release has passing CI, hardened founder/automation roles, a public `/quote` funnel, proposal approval controls, payment-link integration boundaries, backup/restore tooling, and a Railway pilot runbook.
 
-See `PROJECT_STATE.md` for current evidence level and the exact resume point.
+Real-world economic evidence remains:
 
-## Status
+- verified external enquiries: **0**
+- verified paid pilots: **0**
+- verified collected cash: **₹0**
 
-Evidence Level 2 — working prototype. No real customer payment or market validation has occurred yet.
+The present P0 bottleneck is public pilot deployment followed by lawful real-funnel validation. See `sevaa-sales-os/CURRENT.md` for the exact resume point.
 
-> DealLens is educational decision-support software, not financial, legal, tax, or investment advice.
+## Deployment verification
+
+After an authorized public deployment, run `sevaa-sales-os/scripts/verify_deployment.py` with the production founder and automation tokens supplied only through environment variables. The verifier performs non-mutating health, authentication, role-separation, approval-permission, and public quote-page checks.
+
+## Other experiment
+
+The top-level `index.html`, `app.js`, `styles.css`, `MONETIZATION.md`, and `PROJECT_STATE.md` belong to the earlier **DealLens** experiment. They are retained for reference but are not the active repository objective unless persistent SEVAA state is explicitly changed.
