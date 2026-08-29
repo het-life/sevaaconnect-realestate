@@ -5,15 +5,18 @@ This file contains **no passwords, API secrets, private keys, OTPs, bank credent
 ## Immediate action needed
 
 ### public_host_authorization — NEEDED
-Authorize/create the public pilot host and any resulting recurring charge. Current selected shortest path is Railway; the deployment procedure and rollback are in `docs/spec/DEPLOYMENT.md`.
+Authorize/connect a Railway account/project so the validated pilot can be deployed. The deployment procedure and rollback are in `docs/spec/DEPLOYMENT.md`.
 
-Railway pricing re-checked on 2026-08-30 from its official pricing page:
-- new users can receive a 30-day trial with a one-time $5 credit
-- the page labels Free as `$0/month` but also states `then $1 per month` after the trial; treat the exact post-trial Free charge as ambiguous until the account checkout/billing screen confirms it
-- Free lists a 0.5 GB volume limit
-- Hobby is $5 minimum monthly usage and includes $5 of monthly usage, with up to 5 GB volume storage
+Railway documentation re-checked on 2026-08-30:
+- a new user can start the free Trial **without a credit card**
+- the Trial provides a one-time $5 credit for up to 30 days
+- after the Trial, Railway documents a Free plan with $1/month of free credit
+- Trial and Free both list up to 0.5 GB volume storage
+- Hobby remains a paid $5 minimum-usage tier with $5 included usage
 
-Provider pricing remains external and changeable. Verify the actual checkout/upgrade screen before accepting a charge. The pilot should start on the lowest tier that demonstrably provides the required public networking and persistent-volume behavior; do not upgrade merely to spend budget.
+Therefore the immediate gate is account/login authorization, not a required paid subscription. Use the no-card Trial/Free path first. Do not accept Hobby, another paid plan, or excess-use charges unless the free path proves insufficient and the founder explicitly approves the spend.
+
+Provider pricing and eligibility can change, so re-check the account billing screen before any paid upgrade.
 
 Do not put hosting credentials, API tokens, server passwords or private keys in Git.
 
@@ -62,7 +65,7 @@ The validated pilot is intentionally single-instance SQLite with a persistent vo
 - GitHub connector — connected.
 - Validated Docker deployment artifact — available.
 - Public `/quote` acquisition path — implemented and tested.
-- Public `/privacy` notice + affirmative acknowledgement — implemented and tested on PR #6.
+- Public `/privacy` notice + affirmative acknowledgement + versioned audit evidence — merged to `main` and tested.
 - Founder and automation authorization model — implemented and tested.
 
 ## Agent rule
