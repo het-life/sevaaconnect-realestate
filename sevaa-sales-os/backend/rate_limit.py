@@ -79,6 +79,8 @@ def _policy(path: str) -> tuple[str, int, int] | None:
     if not path.startswith("/api/v2/"):
         return None
     window = _int_env("SEVAA_RATE_LIMIT_WINDOW_SECONDS", 60)
+    if path.startswith("/api/v2/public/"):
+        return "public", _int_env("SEVAA_RATE_LIMIT_PUBLIC_PER_WINDOW", 10), window
     if path.startswith("/api/v2/webhooks/"):
         return "webhook", _int_env("SEVAA_RATE_LIMIT_WEBHOOK_PER_WINDOW", 30), window
     return "service", _int_env("SEVAA_RATE_LIMIT_SERVICE_PER_WINDOW", 300), window
