@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
+import secrets
+from datetime import datetime, timezone
 from typing import Literal
 
-from fastapi import Header, HTTPException
+from fastapi import Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 
 import backend.app as base
@@ -47,13 +50,25 @@ def init_phase2_db() -> None:
                 UNIQUE(object_type, object_id),
                 FOREIGN KEY(lead_id) REFERENCES leads(id) ON DELETE SET NULL
             );
+            CREATE TABLE IF NOT EXISTS followups (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                lead_id INTEGER NOT NULL,
+                due_at TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending',
+                channel TEXT NOT NULL DEFAULT 'manual',
+                draft_message TEXT,
+                created_by TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                completed_at TEXT,
+                completion_note TEXT,
+                FOREIGN KEY(lead_id) REFERENCES leads(id) ON DELETE CASCADE
+            );
             CREATE INDEX IF NOT EXISTS idx_approvals_status ON approvals(status);
+            CREATE INDEX IF NOT EXISTS idx_followups_status_due ON followups(status,due_at);
             """
         )
 
 
-# The existing FastAPI lifespan resolves this global at runtime, so replacing it
-# keeps the original startup path and adds phase-2 tables without rewriting v1.
 base.init_db = init_phase2_db
 app = base.app
 
@@ -82,6 +97,46 @@ class ProposalCreate(BaseModel):
 class ApprovalDecision(BaseModel):
     decision: Literal["approved", "rejected"]
     note: str | None = Field(default=None, max_length=1000)
+
+
+class FollowupCreate(BaseModel):
+    due_at: datetime
+    draft_message: str | None = Field(default=None, max_length=3000)
+    channel: Literal["manual", "email", "whatsapp", "phone"] = "manual"
+
+
+class FollowupComplete(BaseModel):
+    note: str | None = Field(default=None, max_length=1000)
+
+
+class ActorContext(BaseModel):
+    actor_id: str
+    role: Literal["founder", "automation"]
+    auth_mode: Literal["local", "token"]
+
+
+def resolve_actor(
+    authorization: str | None = Header(default=None, alias="Authorization"),
+    x_actor: str | None = Header(default=None, alias="X-Actor"),
+) -> ActorContext:
+    founder_token = os.getenv("SEVAA_FOUNDER_TOKEN")
+    automation_token = os.getenv("SEVAA_AUTOMATION_TOKEN")
+    if not founder_token and not automation_token:
+        return ActorContext(actor_id=x_actor or "local-founder", role="founder", auth_mode="local")
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(401, "bearer token required")
+    token = authorization.split(" ", 1)[1].strip()
+    if founder_token and secrets.compare_digest(token, founder_token):
+        return ActorContext(actor_id=x_actor or "founder", role="founder", auth_mode="token")
+    if automation_token and secrets.compare_digest(token, automation_token):
+        return ActorContext(actor_id=x_actor or "automation", role="automation", auth_mode="token")
+    raise HTTPException(401, "invalid bearer token")
+
+
+def require_founder(actor: ActorContext = Depends(resolve_actor)) -> ActorContext:
+    if actor.role != "founder":
+        raise HTTPException(403, "founder role required")
+    return actor
 
 
 def normalized_phone(value: str | None) -> str | None:
@@ -118,13 +173,37 @@ def duplicate_candidate(conn, payload: LeadCreateV2):
 
 
 def as_base_lead(payload: LeadCreateV2) -> base.LeadCreate:
-    return base.LeadCreate(**payload.model_dump(exclude={"allow_duplicate"}))
+    data = payload.model_dump(exclude={"allow_duplicate"})
+    fields = getattr(base.LeadCreate, "model_fields", {})
+    return base.LeadCreate(**{k: v for k, v in data.items() if k in fields})
+
+
+def followup_dict(row) -> dict:
+    out = dict(row)
+    if out["status"] == "completed":
+        out["state"] = "completed"
+    else:
+        due = datetime.fromisoformat(out["due_at"].replace("Z", "+00:00"))
+        if due.tzinfo is None:
+            due = due.replace(tzinfo=timezone.utc)
+        out["state"] = "overdue" if due < datetime.now(timezone.utc) else "pending"
+    return out
+
+
+@app.get("/api/v2/auth/me")
+def auth_me(actor: ActorContext = Depends(resolve_actor)):
+    return actor.model_dump()
 
 
 @app.post("/api/v2/leads", status_code=201)
-def create_lead_v2(payload: LeadCreateV2, idempotency_key: str | None = Header(default=None, alias="Idempotency-Key")):
+def create_lead_v2(
+    payload: LeadCreateV2,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+    actor: ActorContext = Depends(resolve_actor),
+):
     init_phase2_db()
     digest = payload_hash(payload)
+    ts = base.now_iso()
     with base.db() as conn:
         if idempotency_key:
             replay = conn.execute("SELECT * FROM ingestion_keys WHERE idempotency_key=?", (idempotency_key,)).fetchone()
@@ -141,23 +220,34 @@ def create_lead_v2(payload: LeadCreateV2, idempotency_key: str | None = Header(d
             if duplicate:
                 raise HTTPException(409, detail={
                     "code": "duplicate_lead",
+                    "message": "possible duplicate lead",
                     "existing_lead_id": duplicate["id"],
                     "existing_name": duplicate["name"],
                 })
 
-    created = base.create_lead(as_base_lead(payload))
-    if idempotency_key:
-        with base.db() as conn:
+        base_payload = as_base_lead(payload)
+        score = base.score_lead(base_payload)
+        stage = base.stage_for_score(score)
+        cur = conn.execute(
+            """INSERT INTO leads(name,company,phone,email,city,requirement,budget_min,budget_max,timeline_days,known_buyer,site_ready,source,score,stage,created_at,updated_at)
+               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (payload.name, payload.company, payload.phone, payload.email, payload.city, payload.requirement,
+             payload.budget_min, payload.budget_max, payload.timeline_days, int(payload.known_buyer), int(payload.site_ready),
+             payload.source, score, stage, ts, ts),
+        )
+        lead_id = int(cur.lastrowid)
+        if idempotency_key:
             conn.execute(
                 "INSERT INTO ingestion_keys(idempotency_key,payload_hash,lead_id,created_at) VALUES(?,?,?,?)",
-                (idempotency_key, digest, created["id"], base.now_iso()),
+                (idempotency_key, digest, lead_id, ts),
             )
-            base.audit(conn, created["id"], "lead.idempotency_bound", f"Bound inbound key {idempotency_key[:32]}", "api")
-    return created
+        base.audit(conn, lead_id, "lead.created", f"Lead created from {payload.source}; score={score}; stage={stage}", actor.actor_id)
+        row = conn.execute("SELECT * FROM leads WHERE id=?", (lead_id,)).fetchone()
+    return base.lead_dict(row)
 
 
 @app.post("/api/v2/leads/{lead_id}/proposals", status_code=201)
-def create_proposal(lead_id: int, payload: ProposalCreate):
+def create_proposal(lead_id: int, payload: ProposalCreate, actor: ActorContext = Depends(resolve_actor)):
     init_phase2_db()
     ts = base.now_iso()
     with base.db() as conn:
@@ -171,13 +261,13 @@ def create_proposal(lead_id: int, payload: ProposalCreate):
         proposal_id = int(cur.lastrowid)
         if lead["stage"] not in ("won", "lost"):
             conn.execute("UPDATE leads SET stage='proposal',updated_at=? WHERE id=?", (ts, lead_id))
-        base.audit(conn, lead_id, "proposal.created", f"Proposal #{proposal_id} draft created for ₹{payload.amount}", "api")
+        base.audit(conn, lead_id, "proposal.created", f"Proposal #{proposal_id} draft created for ₹{payload.amount}", actor.actor_id)
         proposal = conn.execute("SELECT * FROM proposals WHERE id=?", (proposal_id,)).fetchone()
     return dict(proposal)
 
 
 @app.post("/api/v2/proposals/{proposal_id}/submit")
-def submit_proposal(proposal_id: int):
+def submit_proposal(proposal_id: int, actor: ActorContext = Depends(resolve_actor)):
     init_phase2_db()
     ts = base.now_iso()
     with base.db() as conn:
@@ -195,14 +285,14 @@ def submit_proposal(proposal_id: int):
             (proposal_id, proposal["lead_id"], ts),
         )
         approval_id = int(cur.lastrowid)
-        base.audit(conn, proposal["lead_id"], "proposal.approval_requested", f"Proposal #{proposal_id} requires founder approval", "system")
+        base.audit(conn, proposal["lead_id"], "proposal.approval_requested", f"Proposal #{proposal_id} requires founder approval", actor.actor_id)
         proposal = conn.execute("SELECT * FROM proposals WHERE id=?", (proposal_id,)).fetchone()
         approval = conn.execute("SELECT * FROM approvals WHERE id=?", (approval_id,)).fetchone()
     return {"proposal": dict(proposal), "approval": dict(approval)}
 
 
 @app.get("/api/v2/approvals")
-def list_approvals(status: str = "pending"):
+def list_approvals(status: str = "pending", actor: ActorContext = Depends(resolve_actor)):
     if status not in ("pending", "approved", "rejected", "all"):
         raise HTTPException(400, "invalid approval status")
     init_phase2_db()
@@ -222,7 +312,7 @@ def list_approvals(status: str = "pending"):
 
 
 @app.post("/api/v2/approvals/{approval_id}/decision")
-def decide_approval(approval_id: int, payload: ApprovalDecision):
+def decide_approval(approval_id: int, payload: ApprovalDecision, actor: ActorContext = Depends(require_founder)):
     init_phase2_db()
     ts = base.now_iso()
     with base.db() as conn:
@@ -231,35 +321,124 @@ def decide_approval(approval_id: int, payload: ApprovalDecision):
             raise HTTPException(404, "approval not found")
         if approval["status"] != "pending":
             raise HTTPException(409, "approval already resolved")
-        conn.execute(
-            "UPDATE approvals SET status=?,note=?,resolved_at=? WHERE id=?",
-            (payload.decision, payload.note, ts, approval_id),
-        )
-        conn.execute(
-            "UPDATE proposals SET status=?,updated_at=? WHERE id=?",
-            (payload.decision, ts, approval["object_id"]),
-        )
-        base.audit(conn, approval["lead_id"], "approval.resolved", f"proposal #{approval['object_id']} {payload.decision}", "founder")
+        conn.execute("UPDATE approvals SET status=?,note=?,resolved_at=? WHERE id=?", (payload.decision, payload.note, ts, approval_id))
+        conn.execute("UPDATE proposals SET status=?,updated_at=? WHERE id=?", (payload.decision, ts, approval["object_id"]))
+        base.audit(conn, approval["lead_id"], "approval.resolved", f"proposal #{approval['object_id']} {payload.decision}", actor.actor_id)
         resolved = conn.execute("SELECT * FROM approvals WHERE id=?", (approval_id,)).fetchone()
     return dict(resolved)
 
 
-@app.get("/api/v2/dashboard")
-def dashboard_v2():
+@app.post("/api/v2/leads/{lead_id}/followups", status_code=201)
+def create_followup(lead_id: int, payload: FollowupCreate, actor: ActorContext = Depends(resolve_actor)):
     init_phase2_db()
-    base_dashboard = base.dashboard()
+    ts = base.now_iso()
+    due = payload.due_at if payload.due_at.tzinfo else payload.due_at.replace(tzinfo=timezone.utc)
+    due_iso = due.astimezone(timezone.utc).isoformat()
     with base.db() as conn:
-        pending = [dict(row) for row in conn.execute(
+        lead = conn.execute("SELECT * FROM leads WHERE id=?", (lead_id,)).fetchone()
+        if lead is None:
+            raise HTTPException(404, "lead not found")
+        cur = conn.execute(
+            """INSERT INTO followups(lead_id,due_at,status,channel,draft_message,created_by,created_at)
+               VALUES(?,?,'pending',?,?,?,?)""",
+            (lead_id, due_iso, payload.channel, payload.draft_message, actor.actor_id, ts),
+        )
+        followup_id = int(cur.lastrowid)
+        if lead["stage"] not in ("won", "lost"):
+            conn.execute("UPDATE leads SET stage='follow_up',updated_at=? WHERE id=?", (ts, lead_id))
+        base.audit(conn, lead_id, "followup.scheduled", f"Follow-up #{followup_id} due {due_iso} via {payload.channel}", actor.actor_id)
+        row = conn.execute("SELECT f.*,l.name AS lead_name,l.company AS lead_company FROM followups f JOIN leads l ON l.id=f.lead_id WHERE f.id=?", (followup_id,)).fetchone()
+    return followup_dict(row)
+
+
+@app.get("/api/v2/followups")
+def list_followups(state: str = "all", actor: ActorContext = Depends(resolve_actor)):
+    if state not in ("all", "pending", "overdue", "completed"):
+        raise HTTPException(400, "invalid follow-up state")
+    init_phase2_db()
+    with base.db() as conn:
+        rows = conn.execute(
+            """SELECT f.*,l.name AS lead_name,l.company AS lead_company
+               FROM followups f JOIN leads l ON l.id=f.lead_id ORDER BY f.due_at ASC,f.id ASC"""
+        ).fetchall()
+    items = [followup_dict(row) for row in rows]
+    return items if state == "all" else [x for x in items if x["state"] == state]
+
+
+@app.post("/api/v2/followups/{followup_id}/complete")
+def complete_followup(followup_id: int, payload: FollowupComplete, actor: ActorContext = Depends(resolve_actor)):
+    init_phase2_db()
+    ts = base.now_iso()
+    with base.db() as conn:
+        row = conn.execute("SELECT * FROM followups WHERE id=?", (followup_id,)).fetchone()
+        if row is None:
+            raise HTTPException(404, "follow-up not found")
+        if row["status"] == "completed":
+            raise HTTPException(409, "follow-up already completed")
+        conn.execute("UPDATE followups SET status='completed',completed_at=?,completion_note=? WHERE id=?", (ts, payload.note, followup_id))
+        base.audit(conn, row["lead_id"], "followup.completed", f"Follow-up #{followup_id} completed", actor.actor_id)
+        updated = conn.execute("SELECT f.*,l.name AS lead_name,l.company AS lead_company FROM followups f JOIN leads l ON l.id=f.lead_id WHERE f.id=?", (followup_id,)).fetchone()
+    return followup_dict(updated)
+
+
+@app.get("/api/v2/dashboard")
+def dashboard_v2(actor: ActorContext = Depends(resolve_actor)):
+    init_phase2_db()
+    with base.db() as conn:
+        leads = [base.lead_dict(r) for r in conn.execute("SELECT * FROM leads ORDER BY score DESC,id DESC").fetchall()]
+        pending = [dict(r) for r in conn.execute(
             """SELECT a.*,p.amount,p.scope_summary,l.name AS lead_name,l.company AS lead_company
-               FROM approvals a JOIN proposals p ON p.id=a.object_id
-               LEFT JOIN leads l ON l.id=a.lead_id
+               FROM approvals a JOIN proposals p ON p.id=a.object_id LEFT JOIN leads l ON l.id=a.lead_id
                WHERE a.object_type='proposal' AND a.status='pending' ORDER BY a.id DESC"""
         ).fetchall()]
+        followups = [followup_dict(r) for r in conn.execute(
+            """SELECT f.*,l.name AS lead_name,l.company AS lead_company FROM followups f JOIN leads l ON l.id=f.lead_id
+               WHERE f.status='pending' ORDER BY f.due_at ASC"""
+        ).fetchall()]
+        audits = [dict(r) for r in conn.execute(
+            """SELECT a.*,l.name AS lead_name FROM audit_events a LEFT JOIN leads l ON l.id=a.lead_id ORDER BY a.id DESC LIMIT 8"""
+        ).fetchall()]
         proposal_count = conn.execute("SELECT COUNT(*) AS n FROM proposals").fetchone()["n"]
-    result = dict(base_dashboard)
-    result["pending_approvals"] = pending
-    result["kpis"] = dict(result["kpis"])
-    result["kpis"]["proposals"] = proposal_count
-    result["kpis"]["pending_approvals"] = len(pending)
-    result["kpis"]["founder_attention"] = result["kpis"]["founder_attention"] + len(pending)
-    return result
+    stages = {s: [] for s in base.STAGES}
+    for lead in leads:
+        stages[lead["stage"]].append(lead)
+    qualified = sum(1 for x in leads if x["score"] >= 70 and x["stage"] != "lost")
+    overdue = sum(1 for x in followups if x["state"] == "overdue")
+    pipeline_min = sum((x["budget_min"] or 0) for x in leads if x["stage"] not in ("lost", "won"))
+    pipeline_max = sum((x["budget_max"] or x["budget_min"] or 0) for x in leads if x["stage"] not in ("lost", "won"))
+    return {
+        "kpis": {
+            "lead_count": len(leads),
+            "qualified": qualified,
+            "proposals": proposal_count,
+            "pending_approvals": len(pending),
+            "pending_followups": len(followups),
+            "overdue_followups": overdue,
+            "founder_attention": len(pending) + overdue,
+            "pipeline_min": pipeline_min,
+            "pipeline_max": pipeline_max,
+        },
+        "stages": stages,
+        "pending_approvals": pending,
+        "followups": followups[:8],
+        "audit": audits,
+    }
+
+
+@app.get("/api/v2/internal/daily-brief")
+def daily_brief(actor: ActorContext = Depends(resolve_actor)):
+    data = dashboard_v2(actor)
+    k = data["kpis"]
+    return {
+        "actor": actor.model_dump(),
+        "new_leads": len(data["stages"]["new"]),
+        "high_score_leads": k["qualified"],
+        "proposals": k["proposals"],
+        "proposals_awaiting_approval": k["pending_approvals"],
+        "pending_followups": k["pending_followups"],
+        "overdue_followups": k["overdue_followups"],
+        "pipeline_min": k["pipeline_min"],
+        "pipeline_max": k["pipeline_max"],
+        "founder_attention": k["founder_attention"],
+        "system_failures": 0,
+    }
