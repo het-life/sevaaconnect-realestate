@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-30T04:55:00+05:30",
+  "updated_at": "2026-08-30T05:00:00+05:30",
   "mission": "Reach sustainable INR 100000/month owner-withdrawable cash while retaining reinvestment and safety reserves.",
   "mode": "pre_public_privacy_gate",
   "primary_engine": "managed_b2b_sales_os",
@@ -15,7 +15,7 @@
     "software_evidence_level": 5,
     "software_evidence_label": "paper/sandbox/shadow",
     "privacy_implementation_head": "7c4710f66f79fd7fc2696d4da7b14ee85af74e17",
-    "privacy_implementation_ci": "GitHub Actions run 129 green on audit-trail implementation; regression assertion initially failed from a literal \\n edit artifact, root cause fixed in ee6abe4; exact-head CI pending",
+    "privacy_implementation_ci": "GitHub Actions run 136 green on commit 2400ed44: tests, Compose validation, image build and live container smoke all passed; privacy audit assertion included",
     "pytest": "28 passed",
     "compose_validation": "passed",
     "docker_image_build": "passed",
