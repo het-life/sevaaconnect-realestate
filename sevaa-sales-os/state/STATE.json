@@ -1,20 +1,22 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-30T04:38:00+05:30",
+  "updated_at": "2026-08-30T04:43:00+05:30",
   "mission": "Reach sustainable INR 100000/month owner-withdrawable cash while retaining reinvestment and safety reserves.",
-  "mode": "external_validation_blocked",
+  "mode": "pre_public_privacy_gate",
   "primary_engine": "managed_b2b_sales_os",
   "secondary_engine": "saas_productization_after_paid_demand",
   "market_capital_engine": "paper_only",
   "repository": "het-life/sevaaconnect-realestate",
-  "branch": "main",
-  "merged_pull_request": 2,
+  "branch": "feat/privacy-pilot-hardening",
+  "pull_request": 6,
+  "base_branch": "main",
   "last_verified_release_commit": "4690435b45cbd85b31ba9e20236710735a743cdf",
   "verification": {
     "software_evidence_level": 5,
     "software_evidence_label": "paper/sandbox/shadow",
-    "pytest": "26 passed",
-    "github_ci": "green on exact PR head and on main push run 117 after merge",
+    "privacy_implementation_head": "546d13f66c720948520853571e02eb93445867d2",
+    "privacy_implementation_ci": "GitHub Actions run 119 green",
+    "pytest": "28 passed",
     "compose_validation": "passed",
     "docker_image_build": "passed",
     "container_health": "passed on injected platform PORT with mounted persistent volume",
@@ -56,12 +58,15 @@
     "source-attributed funnel ledger with CAC/payback guardrails",
     "founder requirements and error protocol",
     "open-source reuse policy",
-    "validated Sales OS release candidate merged to main"
+    "validated Sales OS release candidate merged to main",
+    "public privacy notice and affirmative acknowledgement implementation",
+    "DPDP commencement and Rule 3 primary-source implementation research"
   ],
-  "current_bottleneck": "A public HTTPS deployment and lawful real traffic are required to advance from Level 5 sandbox evidence to Level 6 real-world validation.",
-  "next_action": "After explicit hosting authorization, deploy main as one instance with /data persistent storage using docs/spec/DEPLOYMENT.md, run the ten-step verification, then route lawful real traffic to /quote and measure the first external enquiry-to-paid-pilot funnel.",
+  "current_bottleneck": "Exact-head CI and merge of PR #6 are the last internal pre-public gate; after that a public HTTPS deployment and lawful real traffic are required to advance from Level 5 sandbox evidence to Level 6 real-world validation.",
+  "next_action": "Run the full CI gate on the exact current head of PR #6; merge it if green. Then, after explicit hosting authorization, deploy main as one instance with /data persistent storage using docs/spec/DEPLOYMENT.md, verify /privacy and /quote, and measure the first external enquiry-to-paid-pilot funnel.",
   "next_files": [
     "docs/spec/DEPLOYMENT.md",
+    "docs/research/DPDP_PUBLIC_ENQUIRY_2026-08-30.md",
     "CURRENT.md",
     "TODO.md",
     "FOUNDER_REQUIREMENTS.md",
@@ -72,6 +77,7 @@
   "external_gates": [
     "founder-authorized public hosting account/project and any resulting spend",
     "production founder and automation secrets in host secret store",
+    "monitored public privacy/contact mailbox before broad promotion",
     "lawful founder-approved real traffic source",
     "payment-provider credentials only when a founder-reviewed real buyer requires collection"
   ],
@@ -81,6 +87,7 @@
     "Turn repeated operations into code.",
     "Simulation is not revenue; only verified collected cash counts as real revenue.",
     "No autonomous real spend, borrowing, trading, payouts, refunds, price overrides, or unsolicited bulk messaging.",
-    "Keep one application instance while SQLite is the deployment database; PostgreSQL is a measured scale trigger, not pre-pilot work."
+    "Keep one application instance while SQLite is the deployment database; PostgreSQL is a measured scale trigger, not pre-pilot work.",
+    "Do not broadly promote the public quote form without a monitored privacy contact and a reviewed privacy notice."
   ]
 }
