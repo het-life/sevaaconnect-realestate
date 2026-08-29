@@ -18,6 +18,7 @@ def setup_function():
     os.environ.pop("SEVAA_FOUNDER_TOKEN", None)
     os.environ.pop("SEVAA_AUTOMATION_TOKEN", None)
     os.environ.pop("SEVAA_WEBHOOK_TOKEN", None)
+    os.environ.pop("SEVAA_ALLOW_LEGACY_V1", None)
     if TEST_DB.exists():
         TEST_DB.unlink()
 
@@ -193,7 +194,6 @@ def test_webhook_is_disabled_by_default_and_idempotent_when_enabled():
             )
             assert conflict.status_code == 409
 
-            # Webhook callers cannot force duplicate insertion even if they request it.
             duplicate_override = client.post(
                 "/api/v2/webhooks/leads/website",
                 json=payload(name="Duplicate Override", allow_duplicate=True),
@@ -206,3 +206,22 @@ def test_webhook_is_disabled_by_default_and_idempotent_when_enabled():
             assert duplicate_override.json()["detail"]["code"] == "duplicate_lead"
     finally:
         os.environ.pop("SEVAA_WEBHOOK_TOKEN", None)
+
+
+def test_legacy_v1_is_blocked_when_hardened_auth_is_configured():
+    os.environ["SEVAA_FOUNDER_TOKEN"] = "founder-test-token"
+    os.environ["SEVAA_AUTOMATION_TOKEN"] = "automation-test-token"
+    founder = {"Authorization": "Bearer founder-test-token"}
+
+    with TestClient(app) as client:
+        legacy = client.get("/api/leads")
+        assert legacy.status_code == 410
+        assert legacy.json()["detail"]["code"] == "legacy_v1_disabled"
+        assert legacy.headers["deprecation"] == "true"
+
+        health = client.get("/api/health")
+        assert health.status_code == 200
+
+        hardened = client.get("/api/v2/auth/me", headers=founder)
+        assert hardened.status_code == 200
+        assert hardened.json()["role"] == "founder"
