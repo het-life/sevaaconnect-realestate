@@ -1,10 +1,10 @@
 # CURRENT
 
-Status: `main` is the authoritative validated SEVAA Sales OS release. Privacy hardening, deployment preflight, runbook alignment and state reconciliation are merged. Latest verified `main` head: `3b8227b1c8f398a0dc8a1360763791638188ba21`.
+Status: `main` is the authoritative validated SEVAA Sales OS release. Privacy hardening, deployment preflight, no-card hosting-gate reconciliation, and the multi-agent control plane are merged. Latest verified `main` commit: `00d149a1284b073fd8dd05bcfc4140fa0fafd94c`.
 
 ## Objective
 
-Build a low-touch, lawful SEVAA sales/revenue operating system and validate it with real external demand, while keeping consequential actions founder-gated and separating simulated economics from realized results.
+Build a low-touch, lawful SEVAA sales/revenue operating system and validate it with real external demand, while keeping consequential actions founder-gated and separating simulated economics from realized results. The economic target is sustainable **₹1,00,000/month owner-withdrawable cash** while retaining reinvestment and safety reserves.
 
 ## Current state
 
@@ -36,17 +36,24 @@ Working core:
 - Railway pilot deployment/rollback runbook
 - `scripts/verify_deployment.py` for non-mutating hosted health/auth/role/permission/public-page preflight
 - primary-source DPDP commencement/Rule 3 implementation research stored in `docs/research/DPDP_PUBLIC_ENQUIRY_2026-08-30.md`
-- root README now explicitly routes future operators/agents into this persistent SEVAA state rather than the older DealLens experiment
+- root repository authority reconciled so archived DealLens state cannot override the active SEVAA mission
+- machine-readable 10-agent registry with responsibilities, permissions, forbidden actions, KPIs and handoffs
+- shared active-work claims, append-only task-result telemetry schema and generated per-agent scorecards
+- CI-enforced `scripts/agent_maintenance.py --check` to detect stale/invalid coordination state
+- performance scoring excludes `blocked_external` and `cancelled` outcomes from accountable-agent scoring while retaining them in telemetry
 
 ## Verified results
 
 Evidence level: **LEVEL 5 — PAPER / SANDBOX / SHADOW** for software operation.
 
-Latest verified `main` release gate:
+Latest verified release gate:
 
-- commit `3b8227b1c8f398a0dc8a1360763791638188ba21`
-- GitHub Actions run 150 (`33281298927`) completed successfully
-- 31 pytest tests passed
+- `main` commit `00d149a1284b073fd8dd05bcfc4140fa0fafd94c`
+- Git tree `c67f9046466972992f440a8ec34310c9a2f59389`
+- PR #10 GitHub Actions run 167 (`33281766734`) completed successfully on merge ref `49ef06de4591cf1405c15850721d2b3eb75113c0`
+- that merge ref and the squash-merged `main` commit have the **same Git tree**, so the tested artifact is the merged artifact
+- multi-agent control-plane validation passed for all 10 registered roles
+- **36 pytest tests passed**
 - Python backend/scripts compile passed
 - Docker Compose validation passed
 - deployment image build passed
@@ -55,18 +62,34 @@ Latest verified `main` release gate:
 - `/api/health` passed
 - PID 1 verified running as uid 10001 after startup privilege drop
 - `/data` verified owned by uid 10001 in the mounted-volume smoke
-- deployment verifier regression coverage passed and the preflight is designed not to create leads, resolve approvals, or touch payment state
+- deployment verifier remains non-mutating and regression-covered
 
 Economic evidence remains below real-world validation:
 
 - verified external enquiries: 0
 - verified paid pilots: 0
 - verified collected cash: ₹0
-- modeled economics must remain labeled simulated/paper
+- modeled economics remain simulated/paper and must not be presented as realized results
+
+## Agent performance baseline
+
+The control plane now covers: coordinator, sales, quotation, support, marketing, media, operations, finance, trading research, and trading risk/execution.
+
+There was no pre-existing structured per-agent runtime event history, so historical success rate, runtime latency, per-task cost, rework rate and agent quality scores cannot be honestly reconstructed. All agents therefore start with `INSUFFICIENT_RUNTIME_EVIDENCE`; this is an evidence status, not a failure rating.
+
+Readiness based on implemented/tested capability:
+
+- active shadow: coordinator, sales, quotation, operations, finance
+- gated predeployment: marketing, media
+- deferred until paid demand: support
+- isolated paper-only: trading research
+- disabled for real money: trading risk/execution
+
+Scorecards become numerically rated only after at least five accountable task outcomes for a role. Legitimate third-party/account blocks remain visible but do not lower the agent's performance index.
 
 ## Current bottleneck
 
-All meaningful P0 engineering work available without an external hosting account is complete. Evidence advancement now requires Railway account/project authorization, production secret configuration, a monitored public contact identity, and then lawful real traffic. Current Railway documentation permits the initial Trial without a credit card, so a paid subscription is not required merely to begin the deployment experiment. Internal PostgreSQL or additional product features would not advance the core hypothesis before this gate.
+All meaningful P0 repository engineering available before external deployment is complete. Evidence advancement now requires Railway account/project authorization, production secret configuration, a monitored public contact identity, and then lawful real traffic. Current Railway documentation permits the initial Trial without a credit card, so a paid subscription is not required merely to begin the deployment experiment. Additional speculative product infrastructure would not advance the core hypothesis before this gate.
 
 Railway remains the selected pilot host because the current system requires Docker/FastAPI support plus persistent SQLite storage. Free compute options investigated that do not provide persistent local storage are not equivalent substitutes.
 
@@ -80,10 +103,11 @@ Railway remains the selected pilot host because the current system requires Dock
 - Public quote submissions require affirmative privacy-notice acknowledgement.
 - Broad public promotion must not begin until `SEVAA_PUBLIC_CONTACT_EMAIL` points to a monitored company mailbox and `/privacy` is reviewed for the deployed processors/workflow.
 - Hosting plan acceptance or any recurring/excess cloud charge remains a founder approval boundary.
+- Trading roles remain paper-only/real-money-disabled; backtests or simulations are never revenue evidence.
 
 ## Current task
 
-T100 — deploy the validated single-instance pilot to public HTTPS. This task is `BLOCKED_EXTERNAL` only by hosting/account authorization and production configuration; repository implementation and preflight automation are ready.
+T100 — deploy the validated single-instance pilot to public HTTPS. This task is `BLOCKED_EXTERNAL` only by hosting/account authorization and production configuration; repository implementation, deployment preflight, multi-agent coordination and release validation are ready.
 
 ## Approval / external gates
 
@@ -95,6 +119,8 @@ T100 — deploy the validated single-instance pilot to public HTTPS. This task i
 
 ## Exact resume point
 
+Every agent starts with `docs/agent/BOOT.txt`, `CURRENT.md`, `TODO.md`, `state/STATE.json`, `docs/agent/REGISTRY.json`, and `state/ACTIVE_WORK.json`.
+
 Once the Railway project/account boundary is authorized:
 
 1. Deploy branch `main` with Root Directory `/sevaa-sales-os`, one replica, volume mounted at `/data`, and health path `/api/health`.
@@ -104,3 +130,4 @@ Once the Railway project/account boundary is authorized:
 5. Complete the remaining deployment-runbook checks: one clearly synthetic `/quote` enquiry, remove/label it so it cannot enter real metrics, enable backups, and perform the documented restore drill.
 6. Only then direct lawful real traffic to `/quote` and measure the first genuine external enquiry → qualified lead → founder-approved proposal → paid-pilot funnel.
 7. Keep synthetic/paper economics separate from realized enquiries, orders and collected cash at all times.
+8. After each meaningful agent task reaches a terminal outcome, append structured telemetry and regenerate scorecards with `python scripts/agent_maintenance.py --write`.
