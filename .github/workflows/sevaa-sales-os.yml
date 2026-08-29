@@ -1,0 +1,75 @@
+name: SEVAA Sales OS CI
+
+on:
+  push:
+    branches:
+      - main
+      - feat/sevaa-sales-os-mvp
+    paths:
+      - 'sevaa-sales-os/**'
+      - '.github/workflows/sevaa-sales-os.yml'
+  pull_request:
+    paths:
+      - 'sevaa-sales-os/**'
+      - '.github/workflows/sevaa-sales-os.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sevaa-sales-os
+    env:
+      PYTHONPATH: .
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Compile backend and automation modules
+        run: |
+          python -m py_compile backend/*.py
+          python -m py_compile scripts/*.py
+
+      - name: Run tests
+        run: python -m pytest -q
+
+      - name: Validate Compose profile
+        run: docker compose config --quiet
+
+      - name: Build deployment image
+        run: docker build --tag sevaa-sales-os:ci .
+
+      - name: Smoke-test container health on injected platform port
+        run: |
+          docker volume create sevaa-sales-os-ci-data >/dev/null
+          docker run --detach --name sevaa-sales-os-ci \
+            --publish 127.0.0.1:18000:8087 \
+            --env PORT=8087 \
+            --env SEVAA_FOUNDER_TOKEN=ci-founder-token \
+            --env SEVAA_AUTOMATION_TOKEN=ci-automation-token \
+            --volume sevaa-sales-os-ci-data:/data \
+            sevaa-sales-os:ci
+          trap 'docker rm --force sevaa-sales-os-ci >/dev/null 2>&1 || true; docker volume rm sevaa-sales-os-ci-data >/dev/null 2>&1 || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18000/api/health >/dev/null; then
+              docker exec sevaa-sales-os-ci sh -c "awk '/^Uid:/{exit !(\$2==10001)}' /proc/1/status"
+              docker exec sevaa-sales-os-ci sh -c 'test "$(stat -c %u /data)" = "10001"'
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs sevaa-sales-os-ci
+          exit 1

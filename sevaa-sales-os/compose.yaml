@@ -1,0 +1,29 @@
+services:
+  sales-os:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SEVAA_DB_PATH: /data/sevaa.db
+      SEVAA_FOUNDER_TOKEN: ${SEVAA_FOUNDER_TOKEN:-}
+      SEVAA_AUTOMATION_TOKEN: ${SEVAA_AUTOMATION_TOKEN:-}
+      SEVAA_WEBHOOK_TOKEN: ${SEVAA_WEBHOOK_TOKEN:-}
+      SEVAA_ALLOW_LEGACY_V1: ${SEVAA_ALLOW_LEGACY_V1:-0}
+    ports:
+      - "${SEVAA_BIND_HOST:-127.0.0.1}:${SEVAA_PORT:-8000}:8000"
+    volumes:
+      - sevaa-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3).read()"
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  sevaa-data:

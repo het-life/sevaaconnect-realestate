@@ -1,0 +1,45 @@
+# CHANGELOG
+
+## 2026-08-30
+- Replaced static dashboard data with live API-backed rendering.
+- Added FastAPI backend and SQLite persistence.
+- Added deterministic lead scoring and automatic qualification.
+- Added lead stage transitions and append-only audit events.
+- Added dashboard aggregation and demo seed endpoints.
+- Added interactive lead creation form and stage controls.
+- Added test coverage for the primary lead lifecycle.
+- Added requirements, run script, env example and gitignore.
+- Added additive `backend/phase2.py` so v1 remains stable while hardened APIs evolve.
+- Added `Idempotency-Key` replay protection and conservative duplicate-lead detection.
+- Added proposal drafts, pending founder approvals, and explicit audited approve/reject decisions.
+- Added founder/automation Bearer-token authentication with actor identity.
+- Added founder-only approval enforcement; automation credentials cannot resolve approvals.
+- Added persistent follow-up tasks with pending, overdue and completed states.
+- Added authenticated `/api/v2/internal/daily-brief` for automation/OpenClaw clients.
+- Expanded v2 dashboard metrics with pending approvals and overdue follow-ups.
+- Added deterministic proposal Markdown artifacts with draft/approved safety banners and download endpoint.
+- Added disabled-by-default inbound lead webhook adapter with separate secret and mandatory idempotency key.
+- Forced webhook duplicate protection even when callers request duplicate insertion.
+- Added hardened runtime composition in `backend/runtime.py`.
+- Added automatic legacy v1 guard: authenticated deployments return 410 for legacy unauthenticated `/api/*` routes except public health.
+- Added `SEVAA_ALLOW_LEGACY_V1` emergency compatibility override documentation; default remains disabled.
+- Added versioned database migrations v1-v3 plus idempotent `schema_migrations` ledger.
+- Bound hardened runtime initialization to the migration engine to centralize schema creation.
+- Added migration-ledger idempotency regression coverage.
+- Made v1/v2 test database setup safe across pytest collection order.
+- Added GitHub Actions CI for backend compilation and the full pytest suite.
+- Completed authenticated founder console coverage for v2 dashboard, approvals, follow-ups and proposal artifacts.
+- Added `scripts/openclaw_client.py`, constrained to the automation role and intentionally unable to make founder approval decisions.
+- Replaced the obsolete OpenClaw v1 contract with the hardened authenticated v2 contract.
+- Added Dockerfile, persistent-volume Compose profile and `.dockerignore`.
+- Added integrity-checked SQLite backup/restore tooling and round-trip regression coverage.
+- Expanded CI to validate Compose, build the real deployment image and run a live health smoke test.
+- Added process-local sliding-window rate limits for public, webhook and authenticated v2 surfaces without storing raw credentials.
+- Added public `/quote` and duplicate-safe `/api/v2/public/enquiries` acquisition flow with a honeypot and tighter anonymous rate limit.
+- Added founder-gated secure proposal shares, Razorpay payment-link integration and verified payment reconciliation without autonomous provider notifications.
+- Made the container consume hosting-platform `PORT`, repair ownership on a mounted SQLite volume and permanently drop to uid/gid 10001 before starting Uvicorn.
+- Strengthened CI to prove injected-port operation, persistent-volume ownership, non-root PID 1 and public health; current suite reports 26 passing tests.
+- Recorded and fixed a false-negative container UID test by inspecting PID 1 instead of the diagnostic `docker exec` process.
+- Selected Railway as the shortest documented pilot-host path after current provider research; documented persistent volume, backups, health checks, rollback and external spend gate.
+- Reclassified PostgreSQL as a measured scale trigger rather than a pre-pilot dependency.
+- Reprioritized the task queue around Level-6 real-world validation: public deployment, restore drill, first external enquiry, first paid pilot, then observed funnel economics.
