@@ -12,6 +12,7 @@ The initial production shape is intentionally simple:
 - standalone public privacy notice: `/privacy`
 - authenticated founder and automation APIs under `/api/v2`
 - integrity-checked application-level backup/restore tooling
+- non-mutating deployment verifier: `scripts/verify_deployment.py`
 - process-local rate limiting for the single-instance phase
 
 GitHub CI builds the real image, starts it with an attached Docker volume and an injected platform `PORT`, verifies `/api/health`, and asserts the running application has dropped to uid `10001`.
@@ -45,7 +46,7 @@ Provider pricing and account eligibility can change. Verify the actual plan/chec
 
 Create one service from this repository with:
 
-- branch: `main` after the current validated hardening PR is merged
+- branch: `main`
 - Root Directory: `/sevaa-sales-os`
 - Dockerfile: auto-detected from that root directory
 - Volume mount: `/data`
@@ -65,18 +66,42 @@ Set secrets/variables in the hosting platform, never in Git:
 
 Do not set `PORT`; Railway injects it and the container entrypoint consumes it.
 
-After the first successful deploy:
+## Post-deploy verification
 
-1. Confirm `/api/health` returns healthy.
-2. Confirm `/api/v2/auth/me` returns 401 without a token.
-3. Confirm founder token resolves role `founder`.
-4. Confirm automation token resolves role `automation`.
-5. Confirm automation token gets 403 on an approval decision.
-6. Confirm `/privacy` is reachable, accurately describes the quote data/purposes, and shows the configured public contact before broad promotion.
-7. Confirm `/quote` requires privacy acknowledgement; submit one synthetic enquiry and verify it appears once in the founder dashboard.
-8. Delete or clearly label the synthetic lead so it is never counted as real demand.
-9. Enable daily volume backups; create one manual backup and perform a restore drill before accepting important real data.
-10. Point only lawful, founder-approved traffic at `/quote` and keep real observations separate from synthetic validation records.
+### Automated safe preflight
+
+Before creating any synthetic lead, run the non-mutating verifier from the `sevaa-sales-os` directory with the same production founder/automation token values available only in the operator environment:
+
+```bash
+export SEVAA_BASE_URL="https://<public-domain>"
+export SEVAA_FOUNDER_TOKEN="<production-founder-token>"
+export SEVAA_AUTOMATION_TOKEN="<production-automation-token>"
+python scripts/verify_deployment.py
+```
+
+Require `Result: PASS (6/6 checks passed)`.
+
+The verifier checks:
+
+1. `/api/health` returns healthy.
+2. `/api/v2/auth/me` returns 401 without a token.
+3. founder token resolves role `founder`.
+4. automation token resolves role `automation`.
+5. automation token gets 403 on an approval decision permission probe before resource lookup.
+6. `/quote` is reachable.
+
+It intentionally does **not** create leads, resolve approvals, or touch payment state.
+
+### Manual hosted checks
+
+After the safe preflight passes:
+
+1. Confirm `/privacy` is reachable, accurately describes the quote data/purposes, and shows the configured public contact before broad promotion.
+2. Confirm `/quote` requires privacy acknowledgement.
+3. Submit exactly one clearly synthetic enquiry and verify it appears once in the founder dashboard.
+4. Delete or clearly label the synthetic lead so it is never counted as real demand.
+5. Enable daily volume backups; create one manual backup and perform a restore drill before accepting important real data.
+6. Point only lawful, founder-approved traffic at `/quote` and keep real observations separate from synthetic validation records.
 
 ## Backup layers
 
@@ -121,7 +146,7 @@ The DPDP implementation research and commencement schedule reviewed on 2026-08-3
 
 ## External action gate
 
-The repository is technically ready for a hosted pilot after the current hardening PR is green/merged, but actual account/service creation crosses an external boundary.
+The repository is technically ready for a hosted pilot. The latest validated software release and deployment-preflight path are on `main`, but actual account/service creation crosses an external boundary.
 
 ACTION REQUIRED: create/authorize the Railway project and any resulting spend.
 
@@ -135,4 +160,4 @@ RISKS: recurring cloud charges if a paid tier or excess usage is accepted, publi
 
 ROLLBACK: disable public networking, stop/delete the service after exporting an integrity-checked SQLite backup, revoke deployed secrets, and keep the GitHub/CI-validated `main` system unchanged.
 
-AFTER APPROVAL: deploy `main` only after the privacy hardening is merged, run the ten-step post-deploy verification above, then send only lawful real traffic to `/quote` and record observed funnel economics separately from simulated economics.
+AFTER APPROVAL: deploy `main`, run the automated 6-check safe preflight, complete the manual hosted checks above, then send only lawful real traffic to `/quote` and record observed funnel economics separately from simulated economics.
