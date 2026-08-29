@@ -30,6 +30,10 @@ def ingest_lead_webhook(
     if not idempotency_key or len(idempotency_key) > 200:
         raise HTTPException(400, "Idempotency-Key is required")
 
-    normalized = payload.model_copy(update={"source": f"webhook:{source}"})
+    # Webhook callers never get to bypass duplicate protection. A separate
+    # reviewed internal route can support intentional duplicates if needed.
+    normalized = payload.model_copy(
+        update={"source": f"webhook:{source}", "allow_duplicate": False}
+    )
     actor = ActorContext(actor_id=f"webhook:{source}", role="automation", auth_mode="token")
     return create_lead_v2(normalized, idempotency_key=idempotency_key, actor=actor)
