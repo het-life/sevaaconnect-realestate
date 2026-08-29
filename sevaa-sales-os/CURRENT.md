@@ -1,6 +1,6 @@
 # CURRENT
 
-Status: Phase 1 vertical slice is runnable, with a hardened additive v2 path now on the active PR branch.
+Status: Hardened v2 runtime is active on PR #2 and remains isolated from the legacy v1 surface.
 
 Working v1:
 - FastAPI + SQLite local stack
@@ -10,22 +10,27 @@ Working v1:
 - API-driven founder dashboard
 - demo seed
 
-Working v2 extension (`backend/phase2.py`):
-- `POST /api/v2/leads` with `Idempotency-Key` replay protection
-- duplicate protection using normalized email/phone plus same-company requirement matching
-- proposal draft creation
-- proposal submission into an explicit founder approval queue
-- founder approve/reject decisions with audit events
-- `GET /api/v2/approvals`
-- `GET /api/v2/dashboard` with pending-approval counts
-- additive architecture: v1 remains intact while v2 is hardened
-- isolated phase-2 test suite passes: 2 tests
+Working hardened v2 (`backend/phase2.py`):
+- idempotent lead ingestion with `Idempotency-Key`
+- conservative duplicate protection using normalized email/phone and company+requirement
+- proposal draft creation and pending founder approval queue
+- explicit founder approve/reject decisions with audit history
+- environment-driven founder and automation Bearer tokens
+- actor identity via `X-Actor`; audit events record the acting identity
+- automation role cannot approve proposals
+- follow-up scheduling, pending/overdue state detection and completion
+- authenticated `/api/v2/internal/daily-brief`
+- dashboard metrics include pending approvals and overdue follow-ups
+- focused hardened-v2 regression suite covers ingestion, auth, approval gates and follow-ups
 
 Run hardened path:
 `./run_phase2.sh`
 
+Production note:
+Legacy `/api/*` v1 routes remain available for local compatibility. Treat `/api/v2/*` as the hardened path and protect/deprecate v1 before external production exposure.
+
 Safety boundary:
-Approval does not send anything externally. Public messaging, spending, payments, contractual sending, and live trading remain disabled.
+Approval does not send anything externally. Public messaging, spending, payments, contractual sending and live trading remain disabled.
 
 Exact next step:
-Add authentication + actor/role identity for founder vs automation clients, then follow-up tasks with due/overdue states. After that, connect an OpenClaw service credential to the authenticated internal API only.
+Add deterministic proposal document artifacts for founder review/download, then safe inbound webhook adapters using idempotency keys. After that: migrations, CI and deployment hardening.
