@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-08-30T04:18:00+05:30",
+  "mission": "Reach sustainable INR 100000/month owner-withdrawable cash while retaining reinvestment and safety reserves.",
+  "mode": "paper_first",
+  "primary_engine": "managed_b2b_sales_os",
+  "secondary_engine": "saas_productization_after_paid_demand",
+  "market_capital_engine": "paper_only",
+  "repository": "het-life/sevaaconnect-realestate",
+  "branch": "feat/sevaa-sales-os-mvp",
+  "pull_request": 2,
+  "last_known_parent_commit": "0a4e14a3c1ebff2441b401b9128f242d480d7976",
+  "verification": {
+    "local_revenue_tests": "focused paper/funnel suite passed before push",
+    "github_ci": "rerunning after PYTHONPATH fix",
+    "open_errors": 0
+  },
+  "economics": {
+    "starting_capital_range_inr": [50000, 100000],
+    "planning_subscription_ex_gst_inr": 14999,
+    "planning_setup_fee_ex_gst_inr": 14999,
+    "target_monthly_withdrawal_inr": 100000,
+    "modeled_active_customers_for_target": 13,
+    "real_acquisition_enabled": false
+  },
+  "completed": [
+    "lead ingestion/scoring/pipeline/audit",
+    "idempotent duplicate-safe ingestion",
+    "proposal drafts and founder approval gate",
+    "founder/automation auth roles",
+    "followup scheduling and daily brief",
+    "versioned migrations and CI",
+    "paper-money economics model",
+    "source-attributed funnel ledger with CAC/payback guardrails",
+    "founder requirements and error protocol",
+    "open-source reuse policy"
+  ],
+  "next_action": "Confirm GitHub CI is green, then integrate observed funnel events into hardened backend without weakening auth or approval gates.",
+  "next_files": [
+    ".github/workflows/sevaa-sales-os.yml",
+    "backend/runtime.py",
+    "backend/migrations.py",
+    "backend/phase2.py",
+    "scripts/funnel_economics.py",
+    "tests/test_phase2.py",
+    "tests/test_funnel_economics.py"
+  ],
+  "rules": [
+    "Do not replay conversation history when STATE.json is sufficient.",
+    "Never store secret values in Git or logs.",
+    "Turn repeated operations into code.",
+    "Simulation is not revenue; only verified collected cash counts as real revenue.",
+    "No autonomous real spend, borrowing, trading, payouts, refunds, price overrides, or unsolicited bulk messaging."
+  ]
+}

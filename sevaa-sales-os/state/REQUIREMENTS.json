@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-08-30T04:18:00+05:30",
+  "requirements": [
+    {"id":"github_connector","status":"available","secret":false,"note":"Connected and writable through PR branch."},
+    {"id":"public_host","status":"needed","secret":false,"note":"Needed to expose the quote/buyer flow publicly."},
+    {"id":"domain","status":"needed_later","secret":false,"note":"Domain or subdomain plus DNS control after host selection."},
+    {"id":"razorpay_credentials","status":"needed_later","secret":true,"note":"Configure only in production secret store; never Git/logs."},
+    {"id":"buyer_contact_email","status":"needed","secret":false,"note":"Public sales/contact email for buyer-facing pages."},
+    {"id":"real_traffic_source","status":"needed","secret":false,"note":"First lawful demand source: existing audience/site/referral/warm outreach or founder-approved paid channel."},
+    {"id":"first_external_buyer","status":"needed_after_deploy","secret":false,"note":"At least one external enquiry is required to replace paper assumptions with observed data."},
+    {"id":"tax_ca_review","status":"needed_before_real_scaling","secret":false,"note":"Confirm GST classification, ITC and actual company tax regime; no tax portal credentials required."},
+    {"id":"real_acquisition_budget","status":"blocked_until_paid_pilot","secret":false,"note":"Founder sets a hard cap only after paid-pilot evidence."}
+  ]
+}
