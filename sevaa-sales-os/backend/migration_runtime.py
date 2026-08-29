@@ -1,8 +1,8 @@
 """Runtime migration binding for the hardened application.
 
-The older modules retain their bootstrap helpers for compatibility, but the
-hardened runtime binds every initializer to the versioned migration engine so
-schema creation has one source of truth.
+Core runtime eagerly applies stable workflow migrations through v3. Revenue v4
+is lazy-applied by backend.revenue immediately before revenue/payment routes are
+used, which preserves compatibility with older branch tests and databases.
 """
 
 from backend.migrations import apply_migrations
@@ -13,7 +13,7 @@ import backend.proposal_artifacts as proposal_artifacts
 
 def init_runtime_db() -> None:
     with base.db() as conn:
-        apply_migrations(conn)
+        apply_migrations(conn, max_version=3)
 
 
 base.init_db = init_runtime_db
