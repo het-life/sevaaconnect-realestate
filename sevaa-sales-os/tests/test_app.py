@@ -5,10 +5,15 @@ TEST_DB = Path(__file__).with_name("test_sevaa.db")
 os.environ["SEVAA_DB_PATH"] = str(TEST_DB)
 
 from fastapi.testclient import TestClient
-from backend.app import app
+import backend.app as base
+
+app = base.app
 
 
 def setup_function():
+    # Tests share the imported backend module with the v2 suite. Reset the
+    # database path explicitly so pytest collection order cannot leak state.
+    base.DB_PATH = TEST_DB
     if TEST_DB.exists():
         TEST_DB.unlink()
 
