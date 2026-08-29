@@ -21,6 +21,7 @@ def setup_function():
     os.environ.pop("SEVAA_WEBHOOK_TOKEN", None)
     os.environ.pop("SEVAA_ALLOW_LEGACY_V1", None)
     os.environ.pop("SEVAA_RATE_LIMIT_WINDOW_SECONDS", None)
+    os.environ.pop("SEVAA_RATE_LIMIT_PUBLIC_PER_WINDOW", None)
     os.environ.pop("SEVAA_RATE_LIMIT_WEBHOOK_PER_WINDOW", None)
     os.environ.pop("SEVAA_RATE_LIMIT_SERVICE_PER_WINDOW", None)
     reset_rate_limiter()
@@ -61,5 +62,26 @@ def test_authenticated_v2_requests_return_429_after_limit():
         assert third.headers["x-ratelimit-limit"] == "2"
     finally:
         os.environ.pop("SEVAA_RATE_LIMIT_SERVICE_PER_WINDOW", None)
+        os.environ.pop("SEVAA_RATE_LIMIT_WINDOW_SECONDS", None)
+        reset_rate_limiter()
+
+
+def test_public_enquiry_has_tighter_anonymous_limit():
+    os.environ["SEVAA_RATE_LIMIT_PUBLIC_PER_WINDOW"] = "2"
+    os.environ["SEVAA_RATE_LIMIT_WINDOW_SECONDS"] = "60"
+    reset_rate_limiter()
+
+    try:
+        with TestClient(app) as client:
+            first = client.post("/api/v2/public/enquiries", json={})
+            second = client.post("/api/v2/public/enquiries", json={})
+            third = client.post("/api/v2/public/enquiries", json={})
+
+        assert first.status_code == 422
+        assert second.status_code == 422
+        assert third.status_code == 429
+        assert third.headers["x-ratelimit-limit"] == "2"
+    finally:
+        os.environ.pop("SEVAA_RATE_LIMIT_PUBLIC_PER_WINDOW", None)
         os.environ.pop("SEVAA_RATE_LIMIT_WINDOW_SECONDS", None)
         reset_rate_limiter()
