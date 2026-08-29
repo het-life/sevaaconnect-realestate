@@ -19,7 +19,7 @@ Do not introduce Kubernetes, Redis, workers, or PostgreSQL before a measured req
 
 ## Pilot host selection: Railway
 
-As researched on 2026-08-30, Railway is the shortest current path to external validation because it supports:
+As researched and re-checked on 2026-08-30 from Railway's official pricing/docs, Railway is the shortest current path to external validation because it supports:
 
 - GitHub repository deployment and Dockerfiles
 - monorepo root-directory selection
@@ -30,12 +30,13 @@ As researched on 2026-08-30, Railway is the shortest current path to external va
 - secret environment variables
 - deploy-time health checks
 
-Current published plan constraints at research time:
+Current published plan constraints at the re-check:
 
-- Free: $1/month after the trial, up to 0.5 GB volume storage
-- Hobby: $5 minimum monthly usage, up to 5 GB volume storage
+- Trial: new users can receive a one-time $5 credit valid for up to 30 days; a full trial exposes Hobby-like features with tighter compute limits
+- Free: $0/month subscription with $1/month of resource credit; up to 0.5 GB volume storage
+- Hobby: $5/month minimum usage, with the $5 applied toward resource use; up to 5 GB volume storage
 
-Treat provider pricing as changeable; verify it again immediately before committing spend.
+Provider pricing and account eligibility can change. Verify the actual plan/checkout screen before accepting a charge. Start on the lowest tier that provides verified public networking and persistent-volume behavior for the account; do not upgrade without a measured requirement.
 
 ## Railway pilot configuration
 
@@ -117,11 +118,11 @@ ACTION REQUIRED: create/authorize the Railway project and any resulting spend.
 
 WHY: a public host is required to advance from sandbox evidence to a real external enquiry.
 
-COST: currently as low as the published Free-plan $1/month after trial; Hobby has a $5 minimum. Re-check current pricing before purchase.
+COST: Railway currently lists Free at $0/month with $1/month resource credit, after/alongside its new-user trial mechanics; Hobby is $5/month minimum usage. Resource usage above included credits can increase cost. Re-check the actual checkout/upgrade screen before accepting any charge.
 
 EXPECTED BENEFIT: public HTTPS `/quote`, persistent data, recoverable backups, and the ability to measure a real acquisition funnel.
 
-RISKS: recurring cloud charges, public attack surface, provider dependency, brief downtime on volume-backed redeploys, and loss of data if backup policy is ignored.
+RISKS: recurring cloud charges if a paid tier or excess usage is accepted, public attack surface, provider dependency, brief downtime on volume-backed redeploys, and loss of data if backup policy is ignored.
 
 ROLLBACK: disable public networking, stop/delete the service after exporting an integrity-checked SQLite backup, revoke deployed secrets, and keep the local/CI system unchanged.
 
