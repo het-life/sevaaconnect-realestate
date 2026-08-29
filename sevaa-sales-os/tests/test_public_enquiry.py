@@ -83,8 +83,17 @@ def test_public_quote_accepts_lead_with_hardened_auth_enabled():
         leads = [lead for stage in dashboard.json()["stages"].values() for lead in stage]
         matches = [lead for lead in leads if lead["email"] == "public@example.com"]
         assert len(matches) == 1
-        assert matches[0]["source"] == "public-quote"\n\n        with base.db() as conn:\n            events = conn.execute(\n                "SELECT event_type,detail,actor FROM audit_events WHERE lead_id=? ORDER BY id",\n                (matches[0]["id"],),\n            ).fetchall()\n        privacy_events = [event for event in events if event["event_type"] == "privacy.notice_acknowledged"]\n        assert len(privacy_events) == 1\n        assert "version=2026-08-30" in privacy_events[0]["detail"]\n        assert privacy_events[0]["actor"] == "public-quote"
+        assert matches[0]["source"] == "public-quote"
 
+        with base.db() as conn:
+            events = conn.execute(
+                "SELECT event_type,detail,actor FROM audit_events WHERE lead_id=? ORDER BY id",
+                (matches[0]["id"],),
+            ).fetchall()
+        privacy_events = [event for event in events if event["event_type"] == "privacy.notice_acknowledged"]
+        assert len(privacy_events) == 1
+        assert "version=2026-08-30" in privacy_events[0]["detail"]
+        assert privacy_events[0]["actor"] == "public-quote"
 
 def test_public_enquiry_rejects_missing_privacy_acknowledgement():
     with TestClient(app) as client:
