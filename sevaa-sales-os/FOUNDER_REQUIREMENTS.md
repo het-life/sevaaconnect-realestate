@@ -7,12 +7,13 @@ This file contains **no passwords, API secrets, private keys, OTPs, bank credent
 ### public_host_authorization — NEEDED
 Authorize/create the public pilot host and any resulting recurring charge. Current selected shortest path is Railway; the deployment procedure and rollback are in `docs/spec/DEPLOYMENT.md`.
 
-Railway pricing re-checked on 2026-08-30 from official Railway pricing/docs:
+Railway pricing re-checked on 2026-08-30 from its official pricing page:
 - new users can receive a 30-day trial with a one-time $5 credit
-- Free is listed at $0/month with $1/month of resource credit and a 0.5 GB volume limit
-- Hobby is $5/month minimum usage, with that $5 applied toward resource usage and up to 5 GB volume storage
+- the page labels Free as `$0/month` but also states `then $1 per month` after the trial; treat the exact post-trial Free charge as ambiguous until the account checkout/billing screen confirms it
+- Free lists a 0.5 GB volume limit
+- Hobby is $5 minimum monthly usage and includes $5 of monthly usage, with up to 5 GB volume storage
 
-Provider pricing remains external and changeable, so verify it again at the actual checkout/upgrade screen before accepting a charge. The pilot should start on the lowest tier that provides the required verified public networking and persistent-volume behavior; do not upgrade merely to spend budget.
+Provider pricing remains external and changeable. Verify the actual checkout/upgrade screen before accepting a charge. The pilot should start on the lowest tier that demonstrably provides the required public networking and persistent-volume behavior; do not upgrade merely to spend budget.
 
 Do not put hosting credentials, API tokens, server passwords or private keys in Git.
 
