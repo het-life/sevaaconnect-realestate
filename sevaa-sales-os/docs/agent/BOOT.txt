@@ -1,11 +1,16 @@
-SEVAA SALES OS — LOW TOKEN BOOT
-1. Read CURRENT.md.
-2. Read TODO.md.
-3. Read only the implementation files directly related to the top unchecked P0 item.
-4. Do not reread history unless a current file explicitly points to it.
-5. Implement code in the same session; do not stop at planning.
-6. Run focused tests, then full tests when practical.
-7. Preserve approval gates. Never enable autonomous external messaging, spending, live trading, or secrets in source.
-8. Update CURRENT.md, TODO.md and CHANGELOG.md after a meaningful milestone.
-9. Keep responses short: changed / tests / blocker / next.
-Current stack: FastAPI + SQLite + vanilla HTML/JS. Backend source: backend/app.py. UI: web/index.html.
+SEVAA SALES OS — LOW TOKEN MULTI-AGENT BOOT
+1. Read CURRENT.md, TODO.md and state/STATE.json.
+2. Read docs/agent/REGISTRY.json and state/ACTIVE_WORK.json.
+3. Identify the highest-value unblocked task aligned to the ₹1,00,000/month owner-withdrawable-cash mission.
+4. Before substantial shared work, check for an existing claim; claim a narrow scope and use a dedicated branch.
+5. Read only implementation files directly related to that scope. Do not replay chat history when persistent state is sufficient.
+6. Implement in the same session. Prefer the smallest valid experiment or code change that advances evidence.
+7. Run focused validation, then the full relevant gate when practical.
+8. Preserve approval/safety boundaries. Never enable autonomous external sending, real spending, live trading, destructive production actions, or secrets in source.
+9. Record one structured task_result in state/AGENT_EVENTS.jsonl after a meaningful completed/failed/blocked unit. Regenerate scorecards with:
+   python scripts/agent_maintenance.py --write
+10. Validate coordination state with:
+   python scripts/agent_maintenance.py --check
+11. Update CURRENT.md, TODO.md, CHANGELOG.md and state/STATE.json after a meaningful milestone; remove completed work claims.
+12. Handoff with: changed / validation / evidence level / blocker / exact next action.
+Actual stack: FastAPI + SQLite + vanilla HTML/JS. OpenClaw orchestrates through constrained APIs; it is not the source of truth.
