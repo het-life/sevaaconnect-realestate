@@ -9,6 +9,7 @@ The initial production shape is intentionally simple:
 - Docker image built from `sevaa-sales-os/Dockerfile`
 - health endpoint: `/api/health`
 - public acquisition entry point: `/quote`
+- standalone public privacy notice: `/privacy`
 - authenticated founder and automation APIs under `/api/v2`
 - integrity-checked application-level backup/restore tooling
 - process-local rate limiting for the single-instance phase
@@ -44,7 +45,7 @@ Provider pricing and account eligibility can change. Verify the actual plan/chec
 
 Create one service from this repository with:
 
-- branch: `main` (authoritative validated release)
+- branch: `main` after the current validated hardening PR is merged
 - Root Directory: `/sevaa-sales-os`
 - Dockerfile: auto-detected from that root directory
 - Volume mount: `/data`
@@ -58,6 +59,7 @@ Set secrets/variables in the hosting platform, never in Git:
 - `SEVAA_FOUNDER_TOKEN=<unique high-entropy secret>`
 - `SEVAA_AUTOMATION_TOKEN=<different unique high-entropy secret>`
 - `SEVAA_ALLOW_LEGACY_V1=0`
+- `SEVAA_PUBLIC_CONTACT_EMAIL=<monitored company mailbox>` before broad public promotion
 - optionally `SEVAA_WEBHOOK_TOKEN=<third unique secret>` when an inbound webhook is intentionally enabled
 - optionally Razorpay variables only after founder-authorized payment setup
 
@@ -70,11 +72,11 @@ After the first successful deploy:
 3. Confirm founder token resolves role `founder`.
 4. Confirm automation token resolves role `automation`.
 5. Confirm automation token gets 403 on an approval decision.
-6. Submit one synthetic enquiry through `/quote` and verify it appears once in the founder dashboard.
-7. Delete or clearly label the synthetic lead so it is never counted as real demand.
-8. Enable daily volume backups.
-9. Create one manual backup and perform a restore drill before accepting important real data.
-10. Point only lawful, founder-approved traffic at `/quote`.
+6. Confirm `/privacy` is reachable, accurately describes the quote data/purposes, and shows the configured public contact before broad promotion.
+7. Confirm `/quote` requires privacy acknowledgement; submit one synthetic enquiry and verify it appears once in the founder dashboard.
+8. Delete or clearly label the synthetic lead so it is never counted as real demand.
+9. Enable daily volume backups; create one manual backup and perform a restore drill before accepting important real data.
+10. Point only lawful, founder-approved traffic at `/quote` and keep real observations separate from synthetic validation records.
 
 ## Backup layers
 
@@ -100,21 +102,26 @@ Migrate to PostgreSQL when one of these is measured:
 
 PostgreSQL is therefore a scale trigger, not a pre-pilot dependency.
 
-## Security boundary
+## Security and public-data boundary
 
-Before any public deployment:
+Before public deployment:
 
 - founder and automation tokens must both be configured and different
 - legacy v1 must remain disabled
 - secrets must exist only in the host secret store
 - public traffic must use HTTPS
 - `/api/v2/public/*` remains rate-limited more tightly than authenticated service traffic
+- `/quote` must retain its data-minimisation warning and explicit privacy-notice acknowledgement
+- `/privacy` must remain independently readable and describe the data/purpose/contact route accurately
+- configure a monitored `SEVAA_PUBLIC_CONTACT_EMAIL` before broad promotion
 - payment credentials remain absent until explicitly authorized
 - no autonomous external sender is enabled
 
+The DPDP implementation research and commencement schedule reviewed on 2026-08-30 are recorded in `docs/research/DPDP_PUBLIC_ENQUIRY_2026-08-30.md`. This repository does not claim legal certification; re-check law/guidance before material scale and before the 13 May 2027 core commencement milestone documented there.
+
 ## External action gate
 
-The repository is technically ready for a hosted pilot, but the actual account/service creation crosses an external boundary.
+The repository is technically ready for a hosted pilot after the current hardening PR is green/merged, but actual account/service creation crosses an external boundary.
 
 ACTION REQUIRED: create/authorize the Railway project and any resulting spend.
 
@@ -122,10 +129,10 @@ WHY: a public host is required to advance from sandbox evidence to a real extern
 
 COST: Railway's 2026-08-30 pricing page has ambiguous Free-plan wording (`$0 per month` on the card, but `then $1 per month` in the trial bullet). Hobby is clearly $5 minimum monthly usage with $5 included usage. Treat the account checkout/billing screen as authoritative and do not accept a paid plan or excess-use charge without authorization.
 
-EXPECTED BENEFIT: public HTTPS `/quote`, persistent data, recoverable backups, and the ability to measure a real acquisition funnel.
+EXPECTED BENEFIT: public HTTPS `/quote` + `/privacy`, persistent data, recoverable backups, and the ability to measure a real acquisition funnel.
 
-RISKS: recurring cloud charges if a paid tier or excess usage is accepted, public attack surface, provider dependency, brief downtime on volume-backed redeploys, and loss of data if backup policy is ignored.
+RISKS: recurring cloud charges if a paid tier or excess usage is accepted, public attack surface, privacy/data-handling obligations, provider dependency, brief downtime on volume-backed redeploys, and loss of data if backup policy is ignored.
 
 ROLLBACK: disable public networking, stop/delete the service after exporting an integrity-checked SQLite backup, revoke deployed secrets, and keep the GitHub/CI-validated `main` system unchanged.
 
-AFTER APPROVAL: deploy `main`, run the ten-step post-deploy verification above, then send only lawful real traffic to `/quote` and record observed funnel economics separately from simulated economics.
+AFTER APPROVAL: deploy `main` only after the privacy hardening is merged, run the ten-step post-deploy verification above, then send only lawful real traffic to `/quote` and record observed funnel economics separately from simulated economics.
