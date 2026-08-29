@@ -38,10 +38,33 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Compile backend and revenue modules
+      - name: Compile backend and automation modules
         run: |
           python -m py_compile backend/*.py
           python -m py_compile scripts/*.py
 
       - name: Run tests
         run: python -m pytest -q
+
+      - name: Validate Compose profile
+        run: docker compose config --quiet
+
+      - name: Build deployment image
+        run: docker build --tag sevaa-sales-os:ci .
+
+      - name: Smoke-test container health
+        run: |
+          docker run --detach --name sevaa-sales-os-ci \
+            --publish 127.0.0.1:18000:8000 \
+            --env SEVAA_FOUNDER_TOKEN=ci-founder-token \
+            --env SEVAA_AUTOMATION_TOKEN=ci-automation-token \
+            sevaa-sales-os:ci
+          trap 'docker rm --force sevaa-sales-os-ci >/dev/null 2>&1 || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18000/api/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs sevaa-sales-os-ci
+          exit 1
