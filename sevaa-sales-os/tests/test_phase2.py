@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -8,10 +9,14 @@ TEST_DB = Path(__file__).with_name("test_phase2.db")
 os.environ["SEVAA_DB_PATH"] = str(TEST_DB)
 
 from fastapi.testclient import TestClient
+import backend.app as base
 from backend.phase2 import app
 
 
 def setup_function():
+    base.DB_PATH = TEST_DB
+    os.environ.pop("SEVAA_FOUNDER_TOKEN", None)
+    os.environ.pop("SEVAA_AUTOMATION_TOKEN", None)
     if TEST_DB.exists():
         TEST_DB.unlink()
 
@@ -32,37 +37,81 @@ def payload(**overrides):
     return data
 
 
-def test_idempotent_duplicate_safe_ingestion():
+def test_idempotent_ingestion_and_overdue_followup():
     with TestClient(app) as client:
         first = client.post("/api/v2/leads", json=payload(), headers={"Idempotency-Key": "lead-001"})
         assert first.status_code == 201
+
         replay = client.post("/api/v2/leads", json=payload(), headers={"Idempotency-Key": "lead-001"})
         assert replay.status_code == 201
         assert replay.json()["id"] == first.json()["id"]
         assert replay.json()["idempotent_replay"] is True
+
         duplicate = client.post("/api/v2/leads", json=payload(name="Same Contact"))
         assert duplicate.status_code == 409
         assert duplicate.json()["detail"]["code"] == "duplicate_lead"
 
+        due_at = (datetime.now(timezone.utc) - timedelta(minutes=5)).isoformat()
+        followup = client.post(
+            f"/api/v2/leads/{first.json()['id']}/followups",
+            json={"due_at": due_at, "channel": "phone", "draft_message": "Call buyer"},
+        )
+        assert followup.status_code == 201
+        assert followup.json()["state"] == "overdue"
 
-def test_proposal_requires_explicit_founder_decision():
+        dashboard = client.get("/api/v2/dashboard").json()
+        assert dashboard["kpis"]["overdue_followups"] == 1
+        assert dashboard["kpis"]["founder_attention"] >= 1
+
+        completed = client.post(
+            f"/api/v2/followups/{followup.json()['id']}/complete",
+            json={"note": "Called and confirmed next step"},
+        )
+        assert completed.status_code == 200
+        assert completed.json()["state"] == "completed"
+
+
+def test_auth_founder_gate_and_daily_brief():
+    os.environ["SEVAA_FOUNDER_TOKEN"] = "founder-test-token"
+    os.environ["SEVAA_AUTOMATION_TOKEN"] = "automation-test-token"
+    founder = {"Authorization": "Bearer founder-test-token", "X-Actor": "founder-test"}
+    automation = {"Authorization": "Bearer automation-test-token", "X-Actor": "openclaw-test"}
+
     with TestClient(app) as client:
-        lead = client.post("/api/v2/leads", json=payload()).json()
+        assert client.get("/api/v2/auth/me").status_code == 401
+        me = client.get("/api/v2/auth/me", headers=automation)
+        assert me.status_code == 200
+        assert me.json()["role"] == "automation"
+
+        lead = client.post("/api/v2/leads", json=payload(), headers=automation)
+        assert lead.status_code == 201
+
         proposal = client.post(
-            f"/api/v2/leads/{lead['id']}/proposals",
+            f"/api/v2/leads/{lead.json()['id']}/proposals",
             json={"amount": 725000, "scope_summary": "20ft modular cafe shell + interiors"},
+            headers=automation,
         )
         assert proposal.status_code == 201
-        submitted = client.post(f"/api/v2/proposals/{proposal.json()['id']}/submit")
+
+        submitted = client.post(f"/api/v2/proposals/{proposal.json()['id']}/submit", headers=automation)
         assert submitted.status_code == 200
-        approval = submitted.json()["approval"]
-        assert approval["status"] == "pending"
-        dashboard = client.get("/api/v2/dashboard").json()
-        assert dashboard["kpis"]["pending_approvals"] == 1
-        decided = client.post(
-            f"/api/v2/approvals/{approval['id']}/decision",
-            json={"decision": "approved", "note": "Founder checked price and scope"},
+        approval_id = submitted.json()["approval"]["id"]
+
+        forbidden = client.post(
+            f"/api/v2/approvals/{approval_id}/decision",
+            json={"decision": "approved", "note": "automation must not approve"},
+            headers=automation,
         )
-        assert decided.status_code == 200
-        assert decided.json()["status"] == "approved"
-        assert client.get("/api/v2/approvals?status=pending").json() == []
+        assert forbidden.status_code == 403
+
+        approved = client.post(
+            f"/api/v2/approvals/{approval_id}/decision",
+            json={"decision": "approved", "note": "Founder checked price and scope"},
+            headers=founder,
+        )
+        assert approved.status_code == 200
+        assert approved.json()["status"] == "approved"
+
+        brief = client.get("/api/v2/internal/daily-brief", headers=automation)
+        assert brief.status_code == 200
+        assert brief.json()["actor"]["role"] == "automation"
