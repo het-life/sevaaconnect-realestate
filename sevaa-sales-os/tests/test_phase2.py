@@ -225,3 +225,26 @@ def test_legacy_v1_is_blocked_when_hardened_auth_is_configured():
         hardened = client.get("/api/v2/auth/me", headers=founder)
         assert hardened.status_code == 200
         assert hardened.json()["role"] == "founder"
+
+
+def test_runtime_schema_migrations_are_versioned_and_idempotent():
+    with TestClient(app) as client:
+        health = client.get("/api/health")
+        assert health.status_code == 200
+
+    with base.db() as conn:
+        versions = [
+            row["version"]
+            for row in conn.execute(
+                "SELECT version FROM schema_migrations ORDER BY version"
+            ).fetchall()
+        ]
+    assert versions == [1, 2, 3]
+
+    base.init_db()
+    base.init_db()
+    with base.db() as conn:
+        rows = conn.execute(
+            "SELECT version, COUNT(*) AS n FROM schema_migrations GROUP BY version ORDER BY version"
+        ).fetchall()
+    assert [(r["version"], r["n"]) for r in rows] == [(1, 1), (2, 1), (3, 1)]
