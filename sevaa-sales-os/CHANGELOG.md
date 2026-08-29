@@ -12,7 +12,11 @@
 - Added additive `backend/phase2.py` so v1 remains stable while hardened APIs evolve.
 - Added `Idempotency-Key` replay protection and conservative duplicate-lead detection.
 - Added proposal drafts, pending founder approvals, and explicit audited approve/reject decisions.
-- Added `/api/v2/dashboard` approval metrics.
-- Added `run_phase2.sh`.
-- Added isolated phase-2 tests; 2 passed against the exact branch baseline.
-- Updated CURRENT.md and TODO.md so automated build cycles resume at authentication rather than repeating phase-2 work.
+- Added founder/automation Bearer-token authentication with actor identity.
+- Added founder-only approval enforcement; automation credentials cannot resolve approvals.
+- Added persistent follow-up tasks with pending, overdue and completed states.
+- Added authenticated `/api/v2/internal/daily-brief` for automation/OpenClaw clients.
+- Expanded v2 dashboard metrics with pending approvals and overdue follow-ups.
+- Documented founder and automation token environment variables.
+- Expanded hardened-v2 tests to cover ingestion replay, duplicate denial, auth, role gates, approvals and follow-ups.
+- Updated CURRENT.md and TODO.md to advance the automated loop to proposal document artifacts.
