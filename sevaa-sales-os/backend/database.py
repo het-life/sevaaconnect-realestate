@@ -34,16 +34,33 @@ def _postgres_ddl(sql: str) -> str:
     return _AUTO_ID.sub("SERIAL PRIMARY KEY", sql)
 
 
+class CompatRow(dict):
+    """Mapping row that also supports sqlite3.Row-style integer indexing."""
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return tuple(self.values())[key]
+        return super().__getitem__(key)
+
+
+def _compat(row):
+    if row is None or isinstance(row, CompatRow):
+        return row
+    if isinstance(row, dict):
+        return CompatRow(row)
+    return row
+
+
 class PostgresCursor:
     def __init__(self, cursor, connection) -> None:
         self._cursor = cursor
         self._connection = connection
 
     def fetchone(self):
-        return self._cursor.fetchone()
+        return _compat(self._cursor.fetchone())
 
     def fetchall(self):
-        return self._cursor.fetchall()
+        return [_compat(row) for row in self._cursor.fetchall()]
 
     @property
     def rowcount(self) -> int:
